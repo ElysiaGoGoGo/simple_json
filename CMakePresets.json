@@ -22,7 +22,9 @@
       "generator": "Unix Makefiles",
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_FLAGS": "-O0 -g",
+    "CMAKE_CXX_FLAGS": "-O0 -g"
       }
     }
 

@@ -3,10 +3,58 @@
 #define COMMON_HPP
 #include <stdexcept>
 #include <iostream>
+#include <string>
+#include <iostream>
+#include <vector>
+#include <span>
+#include <variant>
+#include <optional>
+#include <string>
+#include <vector>
+#include <unordered_map>
+#include <filesystem>
+#include <string_view>
+#include <tuple>
+#include <ranges>
+#include <span>
+#include <iostream>
+using UniType=std::span<u_int32_t>::const_iterator;
+using std::string;
 class FileGuard
 {
 
 
+};
+class LineError: std::runtime_error
+{
+    UniType where;
+    string msg;
+    public:
+    const char * what() const noexcept override
+    {
+        return msg.c_str();
+    }
+    LineError(const std::string& ms,UniType where):std::runtime_error(ms),msg(ms),where(where){
+
+        auto forward_iter=where,back_iter=where;
+        while(true)
+        {
+            --forward_iter;
+            if(*forward_iter=='\n')
+            {
+                break;
+            }
+        }
+        while(true)
+        {
+            ++back_iter;
+            if(*back_iter=='\n')
+            {
+                break;
+            }
+        }
+        msg+="\n"+std::string(forward_iter,back_iter);
+    }
 };
 class LoopGuard
 {
@@ -21,19 +69,5 @@ class LoopGuard
     }
 }
 };
-class Logger
-{
-    Logger()=default;
-    decltype(std::cerr) &err=std::cerr;
-    decltype(std::cout) &out=std::cout;
-public:
-
-static Logger & getInstance(){static Logger instance; return instance;}
-
-operator decltype(std::cerr)&() {return err;}
-operator decltype(std::cout)&() {return out;}
-
-};
-
 
 #endif // COMMON_HPP
