@@ -180,7 +180,7 @@ OUT_OF_LOOP:
 #pragma endregion
 
 
-bool JsonObjectBuilder::BuildCache::expect_char(UnicodeStringView::const_iterator & it, u_int32_t c)const
+bool JsonObjectBuilder::BuildCache::expect_char(UnicodeStringViewIterator & it, u_int32_t c)const
 {
     while (it!=this->json_obj_str.end())
     {
@@ -198,10 +198,10 @@ bool JsonObjectBuilder::BuildCache::expect_char(UnicodeStringView::const_iterato
     return false;
 }
 
-std::optional<string> JsonObjectBuilder::BuildCache::get_key(UnicodeStringView::const_iterator &it)const
+std::optional<string> JsonObjectBuilder::BuildCache::get_key(UnicodeStringViewIterator &it)const
 {
 
-    UnicodeStringView::const_iterator start;
+UnicodeStringViewIterator     start;
     string key;
     std::optional<string> result;
     bool is_current_char_escaped = false;
@@ -245,7 +245,7 @@ std::optional<string> JsonObjectBuilder::BuildCache::get_key(UnicodeStringView::
     }
     return std::nullopt;
 }
-std::optional<JsonValue> JsonObjectBuilder::BuildCache::parse_value(UnicodeStringView::const_iterator &it)const
+std::optional<JsonValue> JsonObjectBuilder::BuildCache::parse_value(UnicodeStringViewIterator &it)const
 {
     try
     {

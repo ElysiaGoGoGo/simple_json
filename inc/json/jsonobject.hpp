@@ -32,6 +32,7 @@ using JsonObject=std::unordered_map<string, JsonValue> ;
 using UnicodeType=uint32_t;
 using UnicodeString=std::vector<UnicodeType>;
 using UnicodeStringView=std::span<UnicodeType>;
+using UnicodeStringViewIterator=UnicodeStringView::const_iterator;
 namespace fs=std::filesystem ;
 /*
 给定参数可以生成jsonobject,生成失败则cache存放空对象
@@ -52,9 +53,9 @@ class JsonObjectBuilder
         UnicodeString json_file_str;
         
         UnicodeStringView json_obj_str;
-    bool expect_char(UnicodeStringView::const_iterator &it, u_int32_t c)const;
-    std::optional<string> get_key(UnicodeStringView::const_iterator &it)const;
-    std::optional<JsonValue> parse_value(UnicodeStringView::const_iterator &it)const;
+    bool expect_char(UnicodeStringViewIterator &it, u_int32_t c)const;
+    std::optional<string> get_key(UnicodeStringViewIterator &it)const;
+    std::optional<JsonValue> parse_value(UnicodeStringViewIterator &it)const;
 
     };
     std::vector<BuildCache> build_cache;

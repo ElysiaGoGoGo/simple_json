@@ -44,9 +44,9 @@ struct JsonValue
 
 
     JsonValue (UnicodeStringView decoded_str);
-    JsonValue (UnicodeStringView::const_iterator iter);
-    static Type getType(UnicodeStringView::const_iterator iter);
-    UnicodeStringView get_Valuerange(UnicodeStringView::const_iterator iter);
+    JsonValue (UnicodeStringViewIterator iter);
+    static Type getType(UnicodeStringViewIterator iter);
+    UnicodeStringView get_Valuerange(UnicodeStringViewIterator iter);
 
     JsonValue & operator=(const JsonValue& )=default;
     JsonValue() {

@@ -1,6 +1,6 @@
 
 #include "simple_json.hpp"
-JsonValue::Type JsonValue::getType(std::span<uint32_t>::const_iterator iter)
+JsonValue::Type JsonValue::getType(UnicodeStringViewIterator iter)
 {
     auto it = iter;
     while (true)
@@ -73,9 +73,9 @@ JsonValue::Type JsonValue::getType(std::span<uint32_t>::const_iterator iter)
     throw std::runtime_error("u should not reach here");
 }
 
-JsonValue::JsonValue(span<uint32_t>::const_iterator iter) : JsonValue(get_Valuerange(iter)) {}
+JsonValue::JsonValue(UnicodeStringViewIterator iter) : JsonValue(get_Valuerange(iter)) {}
 
-std::span<uint32_t> JsonValue::get_Valuerange(std::span<uint32_t>::const_iterator iter)
+UnicodeStringView JsonValue::get_Valuerange(UnicodeStringViewIterator iter)
 {
 
     auto type = getType(iter);
@@ -90,8 +90,64 @@ std::span<uint32_t> JsonValue::get_Valuerange(std::span<uint32_t>::const_iterato
     case Type::Boolean:
     break;
     }
+    return {};
 }
 
-JsonValue::JsonValue(std::span<uint32_t> decoded_str)
+JsonValue::JsonValue(UnicodeStringView decoded_str)
 {
+}
+
+
+bool expect_right_brace_with_embedded_condition( UnicodeStringViewIterator it)
+{
+    bool is_current_char_escaped = false;
+    bool is_in_string = false;
+    uint32_t extra_left_brace_count = 0;
+    uint32_t right_brace_encountered_count = 0;
+    while(true)
+    {
+        if (is_current_char_escaped)
+        {
+            is_current_char_escaped = false;
+        }
+        else
+        {
+            if(auto c=*it;is_in_string)
+            {
+                if(c=='"')
+                {
+                    is_in_string=false;
+                }
+                else if(c=='\\')
+                {
+                    is_current_char_escaped=true;
+                }
+            }
+            else
+            {
+                if(c=='"')
+                {
+                    is_in_string=true;
+                }
+                else if(c=='{')
+                {
+                    extra_left_brace_count++;
+                }
+                else if(c=='}')
+                {
+                    right_brace_encountered_count++;
+                    if(right_brace_encountered_count+1==extra_left_brace_count)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+        }
+        ++it ;
+    }
+}
+bool expect_right_bracket_with_embedded_condition(UnicodeStringViewIterator it)
+{
+return false;
 }

@@ -18,9 +18,9 @@
 #include <ranges>
 #include <span>
 #include <iostream>
+#include <simple_json.hpp>
 inline bool is_whitespace(u_int32_t c) {return c==' ' || c=='\t' || c=='\n' || c=='\r';}
 
-using UniType=std::span<u_int32_t>::const_iterator;
 using std::string;
 class FileGuard
 {
@@ -29,14 +29,14 @@ class FileGuard
 };
 class LineError: std::runtime_error
 {
-    UniType where;
+    UnicodeStringViewIterator where;
     string msg;
     public:
     const char * what() const noexcept override
     {
         return msg.c_str();
     }
-    LineError(const std::string& ms,UniType where):std::runtime_error(ms),msg(ms),where(where){
+    LineError(const std::string& ms,UnicodeStringViewIterator where):std::runtime_error(ms),msg(ms),where(where){
 
         auto forward_iter=where,back_iter=where;
         while(true)
