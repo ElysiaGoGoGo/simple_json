@@ -14,15 +14,16 @@
 #include <span>
 #include <iostream>
 
+using std::span;
 using std::string;
 using std::variant;
 using std::vector;
-using std::span;
 #include "utf8handler.hpp"
 #include "jsonobject.hpp"
-struct JsonValue
+using JsonRawValueType =variant<string, bool, double, int, JsonArray, JsonObject, null>;
+struct JsonValue : variant<string, bool, double, int, JsonArray, JsonObject, null>
 {
-    variant<string, bool, double, int, JsonArray, JsonObject, null> v;
+
     enum class Type
     {
         String,
@@ -33,26 +34,33 @@ struct JsonValue
         Object,
         Null
     };
+
+    class JsonValueBuilder
+    {
+        UnicodeStringView view_to_build_from;
+
+    public:
+        JsonValueBuilder(UnicodeStringView str) : view_to_build_from(str) {}
+        JsonValue build();
+        Type getType();
+        UnicodeStringView get_Value_range(Type type);
+    };
+    JsonValue &operator=(JsonValue &&) = default;
+    JsonValue(const JsonValue &) = default;
+    JsonValue(JsonValue &&) = default;
+    JsonValue &operator=(const JsonValue &) = default;
     Type getType() const
     {
-       return static_cast<Type>(v.index());
+        return static_cast<Type>(index());
     }
 
-    JsonValue & operator=(JsonValue&& )=default;
-    JsonValue (const JsonValue& )=default;
-    JsonValue(JsonValue&& )=default;
 
-
-    JsonValue (UnicodeStringView decoded_str);
-    JsonValue (UnicodeStringViewIterator iter);
-    static Type getType(UnicodeStringViewIterator iter);
-    UnicodeStringView get_Valuerange(UnicodeStringViewIterator iter);
-
-    JsonValue & operator=(const JsonValue& )=default;
-    JsonValue() {
-        v = null();
-    }
-    
+private:
+    /*
+    template<typename Type,typename...Args>
+    JsonValue(Type&& t,Args&&...args):v(t,std::forward<Args>(args)...) ;
+    */
+    using variant<string, bool, double, int, JsonArray, JsonObject, null>::  variant;
 };
 
 #endif // JSONVALUE_HPP

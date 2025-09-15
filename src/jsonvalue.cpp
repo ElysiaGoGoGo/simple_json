@@ -1,9 +1,9 @@
 
 #include "simple_json.hpp"
-JsonValue::Type JsonValue::getType(UnicodeStringViewIterator iter)
-{
-    auto it = iter;
-    while (true)
+JsonValue::Type JsonValue::JsonValueBuilder:: getType()
+{//TODO
+    auto it = this->view_to_build_from.begin();
+    while (it!= this->view_to_build_from.end())
     {
 
         switch (*it)
@@ -43,7 +43,7 @@ JsonValue::Type JsonValue::getType(UnicodeStringViewIterator iter)
                             }
                             else
                             {
-                                throw LineError("error when parsing JSON value type", it);
+                                throw LineError("error when parsing JSON value type", this->view_to_build_from);
                             }
                         }
                         else if (*it == ',')
@@ -58,27 +58,24 @@ JsonValue::Type JsonValue::getType(UnicodeStringViewIterator iter)
                             }
                             else
                             {
-                                throw LineError("error when parsing JSON value type", it);
+                                throw LineError("error when parsing JSON value type", this->view_to_build_from);
                             }
                         }
                     }
                 }
             }
-            throw LineError("error when parsing JSON value type", it);
+            throw LineError("error when parsing JSON value type", this->view_to_build_from);
         }
         }
 
         ++it;
     }
+    
     throw std::runtime_error("u should not reach here");
 }
 
-JsonValue::JsonValue(UnicodeStringViewIterator iter) : JsonValue(get_Valuerange(iter)) {}
-
-UnicodeStringView JsonValue::get_Valuerange(UnicodeStringViewIterator iter)
-{
-
-    auto type = getType(iter);
+UnicodeStringView JsonValue::JsonValueBuilder:: get_Value_range(Type type)
+{//TODO
     switch (type)
     {
     case Type::Array:
@@ -90,13 +87,28 @@ UnicodeStringView JsonValue::get_Valuerange(UnicodeStringViewIterator iter)
     case Type::Boolean:
     break;
     }
-    return {};
 }
 
-JsonValue::JsonValue(UnicodeStringView decoded_str)
-{
-}
+  JsonValue JsonValue::JsonValueBuilder:: build()
+  {//TODO
+    auto type = getType();
+auto value_range = get_Value_range(type);
+    switch (type)
+    {
+    case Type::Array:
+    case Type::Object:
+    case Type::String:
+    case Type::Null:
+    case Type::Integer:
+    case Type::Float:
+    case Type::Boolean:
+    break;
+    default:
+        throw LineError("error when parsing JSON value type",this->view_to_build_from);
+    }
 
+
+  }
 
 bool expect_right_brace_with_embedded_condition( UnicodeStringViewIterator it)
 {

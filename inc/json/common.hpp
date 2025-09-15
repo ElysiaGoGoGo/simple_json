@@ -29,20 +29,20 @@ class FileGuard
 };
 class LineError: std::runtime_error
 {
-    UnicodeStringViewIterator where;
+    UnicodeStringView where;
     string msg;
     public:
     const char * what() const noexcept override
     {
         return msg.c_str();
     }
-    LineError(const std::string& ms,UnicodeStringViewIterator where):std::runtime_error(ms),msg(ms),where(where){
+    LineError(const std::string& ms,UnicodeStringView where):std::runtime_error(ms),msg(ms),where(where){
 
-        auto forward_iter=where,back_iter=where;
+        auto forward_iter=where.begin(),back_iter=where.begin();
         while(true)
         {
             --forward_iter;
-            if(*forward_iter=='\n')
+            if(*forward_iter=='\n')//dangerous
             {
                 break;
             }

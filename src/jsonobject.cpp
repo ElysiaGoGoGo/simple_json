@@ -7,71 +7,63 @@
 #include <regex>
 #include <iterator>
 using std::ifstream;
-#pragma region Public Methods 
-        bool JsonObjectBuilder:: reset(bool forcereset)
-        {
-            return true;
-        }
-           
-        void JsonObjectBuilder::rebuild(size_t version)
-        {
-            
-        }
-        std::optional<JsonObject> JsonObjectBuilder:: get_product(size_t version)
-        {
-            return std::nullopt;
-        }
-        size_t JsonObjectBuilder:: build_from(std::filesystem::path const& path)
-        {
-            ifstream file(path);
-            if(!(file.is_open() && std::filesystem::exists(path) && std::filesystem::is_regular_file(path)))
-            {
-                return ERROR;
-            }
-            size_t filesize=std::filesystem::file_size(path);
-            std::string buffer(std::istreambuf_iterator<char>(file),{});
-            file.close();
-            
-            this->build_cache.push_back(BuildCache{UTF8Adaptor::decode(buffer),std::span<UnicodeType>()});
-            build_cache.back().json_obj_str=std::span<UnicodeType>(build_cache.back().json_file_str);
-            available_version_count++;
-            
-            //set cache
-            //TODO
-            return this->build_with_cache(build_cache.size() - 1); 
-        }
-        size_t JsonObjectBuilder::JsonObjectBuilder::build_from(UnicodeStringView json_str)
-        {
-            this->build_cache.push_back(BuildCache{{},json_str});
-            available_version_count++;
-            //set cache
-            //TODO
-            return this->build_with_cache(build_cache.size() - 1); 
-        }
-        size_t JsonObjectBuilder::build_from(size_t old_version)
-        {
-            this->build_cache.push_back(build_cache[old_version]);
-            available_version_count++;
-            //set cache
-            //TODO
-            return this->build_with_cache(build_cache.size() - 1); 
-        }
+#define ERROR         \
+    do                \
+    {                 \
+        return false; \
+    } while (0) // throw LineError("Unexpected character", iter)
+#pragma region Public Methods
+bool JsonObjectBuilder::reset(bool forcereset)
+{
+    build_cache = {};
+    if (forcereset || !this->product_cache.has_value())
+    {
+        this->product_cache.reset();
+        this->build_cache = {};
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+std::optional<JsonObject> JsonObjectBuilder::get_product()
+{
+    return this->product_cache.has_value() ? std::move(product_cache) : std::nullopt;
+}
+void JsonObjectBuilder::build_from(std::filesystem::path const &path)
+{
+    ifstream file(path);
+    if (!(file.is_open() && std::filesystem::exists(path) && std::filesystem::is_regular_file(path)))
+    {
+        throw std::invalid_argument("Invalid file path");
+    }
+    size_t filesize = std::filesystem::file_size(path);
+    std::string buffer(std::istreambuf_iterator<char>(file), {});
+    file.close();
+
+    build_cache.json_file_str = UTF8Adaptor::decode(buffer);
+    build_cache.json_obj_str = UnicodeStringView(build_cache.json_file_str);
+
+    this->build_with_cache();
+}
+void JsonObjectBuilder::JsonObjectBuilder::build_from(UnicodeStringView json_str)
+{
+
+    build_cache.json_obj_str = UnicodeStringView(build_cache.json_file_str);
+     this->build_with_cache();
+}
 
 #pragma endregion
-#pragma region Private Methods 
+#pragma region Private Methods
 
-        size_t JsonObjectBuilder::build_with_cache(size_t version)
-        {
-            const auto & cache=build_cache[version];
-            
-            this->product_cache.push_back(std::make_unique<JsonObject>());
-            const auto & decoded_str=cache.json_obj_str;//for laziness
-            auto &obj=*this->product_cache.back();
+bool JsonObjectBuilder::build_with_cache() const
+{
 
-        
-    #define ERROR do{return(this->ERROR);}while(0) //throw LineError("Unexpected character", iter)
+    this->product_cache.emplace(JsonObject());
+    const auto &decoded_str = build_cache.json_obj_str; // for laziness
 
-    auto iter = decoded_str.cbegin();
+    auto iter = decoded_str.begin();
     enum class IterStatus
     {
         EXPECT_LEFT_BRACE,
@@ -87,76 +79,56 @@ using std::ifstream;
     {
         if (iter >= decoded_str.end())
         {
-            throw "str ends not because of status: EXPECT_RIGHT_BRACE";
+            ERROR;//throw "str ends not because of status: EXPECT_RIGHT_BRACE";
         }
         switch (status)
         {
         case IterStatus::EXPECT_LEFT_BRACE:
 
         {
-            if (cache.expect_char(iter, '{'))
-            {
+            build_cache.expect_char(iter, '{');
+            
                 status = IterStatus::EXPECT_KEY;
-            }
-            else
-            {
-                ERROR;
-            }
+            
         }
         break;
         case IterStatus::EXPECT_KEY:
         {
-            if (auto k = cache.get_key(iter); k)
-            {
-                key_cache = *k;
-            }
-            else
-            {
-                ERROR;
-            }
+            
+            
+                key_cache = std::move(build_cache.get_key(iter));
+            
             status = IterStatus::EXPECT_COLON;
             break;
         }
         case IterStatus::EXPECT_COLON:
         {
-            if (cache.expect_char(iter, ':'))
-            {
+            build_cache.expect_char(iter, ':');
+            
                 status = IterStatus::EXPECT_VALUE;
-            }
-            else
-            {
-                ERROR;
-            }
+            
             break;
         }
         case IterStatus::EXPECT_VALUE:
         {
-            if (auto v = cache.parse_value(iter); v)
-            {
-                obj[key_cache] = *v;
-            }
-            else
-            {
-
-                ERROR;
-            }
-
+                this->product_cache->operator[](key_cache) =std::move(build_cache.parse_value(iter));
+         
             status = IterStatus::EXPECT_COMMA_OR_RIGHT_BRACE;
             break;
         }
         case IterStatus::EXPECT_COMMA_OR_RIGHT_BRACE:
         {
-            if (cache.expect_char(iter, ','))
+            if (build_cache.expect_comma_or_right_brace(iter,true))
             {
                 status = IterStatus::EXPECT_KEY;
             }
-            else if (cache.expect_char(iter, '}'))
+            else if (build_cache.expect_comma_or_right_brace(iter, false))
             {
                 status = IterStatus::READY_TO_EXIT;
             }
             else
             {
-                ERROR;
+                throw LineError("Expecting ',' or '}'", this->build_cache.json_obj_str);
             }
             break;
         }
@@ -171,18 +143,33 @@ OUT_OF_LOOP:
 #if CXX_STANDARD <= 23
     ;
 #endif
-        return version;
-        
-        }
-
-
+    return true;
+}
 
 #pragma endregion
 
-
-bool JsonObjectBuilder::BuildCache::expect_char(UnicodeStringViewIterator & it, u_int32_t c)const
+#pragma region BuildCache Methods
+void JsonObjectBuilder::BuildCache::expect_char(UnicodeStringViewIterator &it, u_int32_t c) const
 {
-    while (it!=this->json_obj_str.end())
+    while (it != this->json_obj_str.end())
+    {
+        if (!is_whitespace(*it))
+        {
+            if (*it == c)
+            {
+                ++it;
+                return ;
+            }
+            throw LineError("Unexpected character", this->json_obj_str);
+        }
+        ++it;
+    }
+    throw LineError("Unexpected end of file", this->json_obj_str);
+}
+ bool JsonObjectBuilder::BuildCache:: expect_comma_or_right_brace(UnicodeStringViewIterator &it,bool is_comma_expected) const
+ {
+    auto c=is_comma_expected? ',':'}';
+  while (it != this->json_obj_str.end())
     {
         if (!is_whitespace(*it))
         {
@@ -196,14 +183,13 @@ bool JsonObjectBuilder::BuildCache::expect_char(UnicodeStringViewIterator & it, 
         ++it;
     }
     return false;
-}
+ }
 
-std::optional<string> JsonObjectBuilder::BuildCache::get_key(UnicodeStringViewIterator &it)const
+string JsonObjectBuilder::BuildCache::get_key(UnicodeStringViewIterator &it) const
 {
 
-UnicodeStringViewIterator     start;
+    UnicodeStringViewIterator start;
     string key;
-    std::optional<string> result;
     bool is_current_char_escaped = false;
     while (true)
     {
@@ -215,11 +201,11 @@ UnicodeStringViewIterator     start;
         }
         if (!is_whitespace(*it))
         {
-            return std::nullopt;
+            throw LineError("Expecting '\"' or any whitespace character", this->json_obj_str);
         }
         it++;
     }
-    while (it!= this->json_obj_str.end())
+    while (it != this->json_obj_str.end())
     {
         if (is_current_char_escaped)
         {
@@ -232,9 +218,8 @@ UnicodeStringViewIterator     start;
 
                 key.resize(it - start);
                 std::copy(start, it, key.begin());
-                result.emplace(std::move(key));
                 ++it;
-                return result;
+                return key;
             }
             if (*it == '\\')
             {
@@ -243,18 +228,12 @@ UnicodeStringViewIterator     start;
         }
         ++it;
     }
-    return std::nullopt;
+    throw LineError("Unexpected end of file", this->json_obj_str);
 }
-std::optional<JsonValue> JsonObjectBuilder::BuildCache::parse_value(UnicodeStringViewIterator &it)const
+JsonValue JsonObjectBuilder::BuildCache::parse_value(UnicodeStringViewIterator &it) const
 {
-    try
-    {
-        JsonValue jv(it);
-        std::optional<JsonValue> op(std::move(jv));
-        return op;
-    }
-    catch (...)
-    {
-        return std::nullopt;
-    }
+
+    return JsonValue::JsonValueBuilder(UnicodeStringView(it, this->json_obj_str.end())).build();
 }
+
+#pragma endregion
