@@ -18,6 +18,8 @@
 #include <ranges>
 #include <span>
 #include <iostream>
+inline bool is_whitespace(u_int32_t c) {return c==' ' || c=='\t' || c=='\n' || c=='\r';}
+
 using UniType=std::span<u_int32_t>::const_iterator;
 using std::string;
 class FileGuard
