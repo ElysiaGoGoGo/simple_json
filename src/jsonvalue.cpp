@@ -54,7 +54,7 @@ JsonValue::Type JsonValue::JsonValueBuilder:: getType()const
         switch (*it)
         {
         case '"':
-            return Type::Array;
+            return Type::String;
         case '{':
             return Type::Object;
         case '[':
@@ -135,7 +135,7 @@ UnicodeStringView JsonValue::JsonValueBuilder:: get_Value_range(Type type)
   {//TODO
     skip_whitespace();
     auto type = getType();
-    
+   std::cout<<" \n\nview_to_build_from:" <<string (view_to_build_from.begin(),view_to_build_from.end())<<std::endl;
 
     switch (type)
     {
@@ -178,6 +178,7 @@ UnicodeStringView JsonValue::JsonValueBuilder:: get_Value_range(Type type)
       {
         break;
       }
+      builder.view_to_build_from=builder.view_to_build_from.subspan(iter-builder.view_to_build_from.begin());
 }
 
 
@@ -185,6 +186,7 @@ UnicodeStringView JsonValue::JsonValueBuilder:: get_Value_range(Type type)
     }
     case Type::Object:
     {auto value_range = get_Value_range(type);
+      std::  cout<<"\n\nvalue range:"<<string (value_range.begin(),value_range.end())<<std::endl;
     JsonObjectBuilder builder;
     builder.build_from(value_range);
     

@@ -53,16 +53,16 @@ void JsonObjectBuilder::build_from(std::filesystem::path const &path)
 void JsonObjectBuilder::JsonObjectBuilder::build_from(UnicodeStringView json_str)
 {
 
-    build_cache.json_obj_str = UnicodeStringView(build_cache.json_file_str);
+    build_cache.json_obj_str = json_str;
      this->build_with_cache();
 }
 
 #pragma endregion
 #pragma region Private Methods
 
-bool JsonObjectBuilder::build_with_cache() const
+void JsonObjectBuilder::build_with_cache() const
 {
-
+ std::cout<<"building with cache:\n"<<string(build_cache.json_obj_str.begin(),build_cache.json_obj_str.end()) <<std::endl;
     this->product_cache.emplace(JsonObject());
     const auto &decoded_str = build_cache.json_obj_str; // for laziness
 
@@ -82,7 +82,11 @@ bool JsonObjectBuilder::build_with_cache() const
     {
         if (iter >= decoded_str.end())
         {
-            ERROR;//throw "str ends not because of status: EXPECT_RIGHT_BRACE";
+            if(iter==decoded_str.end()&&status==IterStatus::READY_TO_EXIT)
+            {
+                break;
+            }
+            throw LineError("Unexpected end of obj str",iter);//throw "str ends not because of status: EXPECT_RIGHT_BRACE";
         }
         switch (status)
         {
@@ -115,7 +119,8 @@ bool JsonObjectBuilder::build_with_cache() const
         case IterStatus::EXPECT_VALUE:
         {
                 this->product_cache->operator[](key_cache) =std::move(build_cache.parse_value(iter));
-         
+            auto index=iter-build_cache.json_obj_str.begin();
+            std::cout<<"parsed value at index "<<index<<std::endl;
             status = IterStatus::EXPECT_COMMA_OR_RIGHT_BRACE;
             break;
         }
@@ -146,7 +151,7 @@ OUT_OF_LOOP:
 #if CXX_STANDARD <= 23
     ;
 #endif
-    return true;
+
 }
 
 #pragma endregion
@@ -172,18 +177,20 @@ void JsonObjectBuilder::BuildCache::expect_char(UnicodeStringViewIterator &it, u
  bool JsonObjectBuilder::BuildCache:: expect_comma_or_right_brace(UnicodeStringViewIterator &it,bool is_comma_expected) const
  {
     u_int32_t c=is_comma_expected? ',':'}';
-  while (it != this->json_obj_str.end())
+    auto iter=it;
+  while (iter != this->json_obj_str.end())
     {
-        if (!is_whitespace(*it))
+        if (!is_whitespace(*iter))
         {
-            if (*it == c)
+            if (*iter == c)
             {
-                ++it;
+                ++iter;
+                it=iter;
                 return true;
             }
             return false;
         }
-        ++it;
+        ++iter;
     }
     return false;
  }

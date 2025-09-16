@@ -59,7 +59,7 @@ class JsonObjectBuilder
     BuildCache build_cache;
     mutable std::optional<JsonObject> product_cache;
 
-    bool build_with_cache() const;
+    void build_with_cache() const;
 
 public:
     bool reset(bool forcereset = false);
