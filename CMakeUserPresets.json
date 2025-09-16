@@ -1,23 +1,16 @@
 {
-  "version": 2,
+  "version": 3,
   "configurePresets": [
     {
-      "name": "default",
-      "inherits": "vcpkg",
+      "name": "win_debug",
+      "inherits": ["debug","vs2022"],
       "environment": {
-        "VCPKG_ROOT": "$env{HOME}/vcpkg"
+        "VCPKG_ROOT": "C:\\environment\\VCPKG\\vcpkg"
       }
     },
-       {
-      "name": "release",
-      "inherits": "non-vcpkg-release",
-      "environment": {
-
-      }
-    },
-      {
-      "name": "debug",
-      "inherits": "non-vcpkg-debug",
+    {
+      "name": "linux_debug",
+      "inherits": ["debug","make"],
       "environment": {
         
       }
