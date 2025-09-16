@@ -1,32 +1,60 @@
 {
-  "version": 2,
+  "version": 3,
+
   "configurePresets": [
     {
-      "name": "vcpkg",
+      "name": "ninja",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
       }
     },
-      {
-      "name": "non-vcpkg-release",
+    {
+      "name": "mingw",
+      "generator": "MinGW Makefiles",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+      }
+    },
+    {
+      "name": "make",
       "generator": "Unix Makefiles",
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
       }
     },
-     {
-      "name": "non-vcpkg-debug",
-      "generator": "Unix Makefiles",
+    {
+      "name": "vs2022",
+      "generator": "Visual Studio 17 2022",
       "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+      
+      }
+    },
+    {
+      "name": "vcpkg",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+      }
+    },
+    {
+      "name": "debug",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_C_FLAGS": "-O0 -g",
-    "CMAKE_CXX_FLAGS": "-O0 -g -Wall"
+        "CMAKE_CXX_FLAGS": "-O0 -g -Wall"
+      }
+    },
+    {
+      "name": "release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_FLAGS": "-O3",
+        "CMAKE_CXX_FLAGS": "-O3 -Wall"
       }
     }
-
   ]
 }
