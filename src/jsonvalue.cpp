@@ -1,5 +1,11 @@
 
 #include "simple_json.hpp"
+
+/**
+ * @brief 获取字符串值和结束迭代器
+ * Get string value and end iterator
+ * @return 包含字符串和迭代器的元组 Tuple containing string and iterator
+ */
 tuple<string,UnicodeStringViewIterator> JsonValue::JsonValueBuilder::get_string_value_and_end() const
 {
     UnicodeStringViewIterator start;
@@ -135,7 +141,9 @@ UnicodeStringView JsonValue::JsonValueBuilder:: get_Value_range(Type type)
   {//TODO
     skip_whitespace();
     auto type = getType();
+#ifdef DEBUG
    std::cout<<" \n\nview_to_build_from:" <<string (view_to_build_from.begin(),view_to_build_from.end())<<std::endl;
+#endif
 
     switch (type)
     {
@@ -186,10 +194,11 @@ UnicodeStringView JsonValue::JsonValueBuilder:: get_Value_range(Type type)
     }
     case Type::Object:
     {auto value_range = get_Value_range(type);
-      std::  cout<<"\n\nvalue range:"<<string (value_range.begin(),value_range.end())<<std::endl;
     JsonObjectBuilder builder;
     builder.build_from(value_range);
-    
+#ifdef DEBUG
+    std::cout<<"\n\nvalue range:"<<string (value_range.begin(),value_range.end())<<std::endl;
+#endif
     return {*(builder.get_product()),value_range.end()};
     }
     case Type::String:

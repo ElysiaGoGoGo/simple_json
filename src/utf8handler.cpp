@@ -28,7 +28,9 @@
                 prefix_bits_count+=6;
   
             }
-  //          cout<<"prefix_bits_count:"<<prefix_bits_count<<"result of sum :"<<std::bitset<32>(result)<<"\n";
+#ifdef DEBUG
+          std::cout<<"prefix_bits_count:"<<prefix_bits_count<<"result of sum :"<<std::bitset<32>(result)<<"\n";
+#endif
             return result>>(32-size*8);
 
         };

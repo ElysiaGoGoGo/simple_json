@@ -62,7 +62,9 @@ void JsonObjectBuilder::JsonObjectBuilder::build_from(UnicodeStringView json_str
 
 void JsonObjectBuilder::build_with_cache() const
 {
+#ifdef DEBUG
  std::cout<<"building with cache:\n"<<string(build_cache.json_obj_str.begin(),build_cache.json_obj_str.end()) <<std::endl;
+#endif
     this->product_cache.emplace(JsonObject());
     const auto &decoded_str = build_cache.json_obj_str; // for laziness
 
@@ -119,8 +121,11 @@ void JsonObjectBuilder::build_with_cache() const
         case IterStatus::EXPECT_VALUE:
         {
                 this->product_cache->operator[](key_cache) =std::move(build_cache.parse_value(iter));
-            auto index=iter-build_cache.json_obj_str.begin();
+#ifdef DEBUG            
+                auto index=iter-build_cache.json_obj_str.begin();
+
             std::cout<<"parsed value at index "<<index<<std::endl;
+#endif
             status = IterStatus::EXPECT_COMMA_OR_RIGHT_BRACE;
             break;
         }
