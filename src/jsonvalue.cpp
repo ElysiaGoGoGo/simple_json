@@ -1,7 +1,52 @@
 
 #include "simple_json.hpp"
-JsonValue::Type JsonValue::JsonValueBuilder:: getType()
-{//TODO
+tuple<string,UnicodeStringViewIterator> JsonValue::JsonValueBuilder::get_string_value_and_end() const
+{
+    UnicodeStringViewIterator start;
+    auto it = this->view_to_build_from.begin();
+    string key;
+    bool is_current_char_escaped = false;
+    while (true)
+    {
+        if (*it == '"')
+        {
+            start = it + 1;
+            ++it;
+            break;
+        }
+        if (!is_whitespace(*it))
+        {
+            throw LineError("Expecting '\"' or any whitespace character", this->view_to_build_from.begin());
+        }
+        it++;
+    }
+    while (it != this->view_to_build_from.end())
+    {
+        if (is_current_char_escaped)
+        {
+            is_current_char_escaped = false;
+        }
+        else
+        {
+            if (*it == '"')
+            {
+
+                key.resize(it - start);
+                std::copy(start, it, key.begin());
+                ++it;
+                return {key,it};
+            }
+            if (*it == '\\')
+            {
+                is_current_char_escaped = true;
+            }
+        }
+        ++it;
+    }
+    throw LineError("Unexpected end of file", this->view_to_build_from.begin());
+}
+JsonValue::Type JsonValue::JsonValueBuilder:: getType()const
+{
     auto it = this->view_to_build_from.begin();
     while (it!= this->view_to_build_from.end())
     {
@@ -24,7 +69,8 @@ JsonValue::Type JsonValue::JsonValueBuilder:: getType()
         case '\n':
         case '\t':
         case '\r':
-            break;
+            throw LineError("Unexpected whitespace when parsing JSON value type", this->view_to_build_from.begin());
+            
         default:
         {
             if (*it >= '0' && *it <= '9')
@@ -36,15 +82,7 @@ JsonValue::Type JsonValue::JsonValueBuilder:: getType()
                     {
                         if (*it == '.')
                         {
-                            ++it;
-                            if (!(*it < '0' || *it > '9'))
-                            {
                                 return Type::Float;
-                            }
-                            else
-                            {
-                                throw LineError("error when parsing JSON value type", this->view_to_build_from);
-                            }
                         }
                         else if (*it == ',')
                         {
@@ -58,13 +96,13 @@ JsonValue::Type JsonValue::JsonValueBuilder:: getType()
                             }
                             else
                             {
-                                throw LineError("error when parsing JSON value type", this->view_to_build_from);
+                                throw LineError("error when parsing JSON value type", this->view_to_build_from.begin());
                             }
                         }
                     }
                 }
             }
-            throw LineError("error when parsing JSON value type", this->view_to_build_from);
+            throw LineError("error when parsing JSON value type", this->view_to_build_from.begin());
         }
         }
 
@@ -79,44 +117,142 @@ UnicodeStringView JsonValue::JsonValueBuilder:: get_Value_range(Type type)
     switch (type)
     {
     case Type::Array:
+    return view_to_build_from.first(this->expect_right_brace_or_right_bracket_with_embedded_condition(false)-this->view_to_build_from.begin());
     case Type::Object:
+     return view_to_build_from.first(this->expect_right_brace_or_right_bracket_with_embedded_condition(true)-this->view_to_build_from.begin());
     case Type::String:
     case Type::Null:
     case Type::Integer:
     case Type::Float:
     case Type::Boolean:
+    default:
+        throw std::logic_error("this method is not designed for these types");
     break;
     }
 }
 
-  JsonValue JsonValue::JsonValueBuilder:: build()
+  std::tuple<JsonValue,UnicodeStringViewIterator> JsonValue::JsonValueBuilder:: build()//返回的iter指向被解析的值的下一个字符
   {//TODO
+    skip_whitespace();
     auto type = getType();
-auto value_range = get_Value_range(type);
+    
+
     switch (type)
     {
     case Type::Array:
+    {auto value_range = get_Value_range(type);    
+        JsonArray array;
+        array.reserve(std::count(value_range.begin(),value_range.end(),','));
+        JsonValueBuilder builder(value_range.subspan(1,value_range.size()-2));
+        auto skip_comma =[](UnicodeStringViewIterator & iter)->bool{
+            LoopGuard guard;
+            while(true)
+            {
+                guard();
+                if(auto c=*iter;c==',')
+                {
+                    ++iter;
+                    return true;
+                }
+                else if(c==']')
+                {
+                    ++iter;
+                    return false;
+                }
+                else if(!is_whitespace(c))
+                {
+                        throw LineError("Expecting ',' or ']' or any whitespace character", iter);
+                }
+                ++iter;
+                }
+            
+
+        };
+        LoopGuard guard;
+        while(true)
+    {
+            guard();
+ auto [value,iter]=    builder.build();
+        array.emplace_back(std::move(value));
+      if(!skip_comma(iter))
+      {
+        break;
+      }
+}
+
+
+    return {array,value_range.end()};
+    }
     case Type::Object:
+    {auto value_range = get_Value_range(type);
+    JsonObjectBuilder builder;
+    builder.build_from(value_range);
+    
+    return {*(builder.get_product()),value_range.end()};
+    }
     case Type::String:
-    case Type::Null:
+    return get_string_value_and_end();
+        case Type::Null:
+        return [this]()->  std::tuple<JsonValue,UnicodeStringViewIterator>{ if( [this]()->bool{  
+            
+            return view_to_build_from[0]=='n' && view_to_build_from[1]=='u' && view_to_build_from[2]=='l' && view_to_build_from[3]=='l';
+            
+            }()   ) {return {JsonValue(null()),this->view_to_build_from.begin()+4};}else {throw LineError("error when parsing JSON value type",this->view_to_build_from.begin());}    }();
     case Type::Integer:
+    return [this]()->  std::tuple<JsonValue,UnicodeStringViewIterator>{ for(auto iter=this->view_to_build_from.begin();iter!=this->view_to_build_from.end();++iter)
+    {
+        if(is_whitespace(*iter)||is_end_char(*iter))
+        {
+            return {std::stoi(std::string(view_to_build_from.begin(),iter)),iter};
+        }
+    }
+    throw LineError("error when parsing JSON value type",this->view_to_build_from.begin());
+    
+    }();
     case Type::Float:
+        return [this]()->  std::tuple<JsonValue,UnicodeStringViewIterator>{ for(auto iter=this->view_to_build_from.begin();iter!=this->view_to_build_from.end();++iter)
+    {
+        if(is_whitespace(*iter)||is_end_char(*iter))
+        {
+            return {std::stod(std::string(view_to_build_from.begin(),iter)),iter};
+        }
+    }
+    throw LineError("error when parsing JSON value type",this->view_to_build_from.begin());
+    
+    }();
     case Type::Boolean:
+    return [this]()->  std::tuple<JsonValue,UnicodeStringViewIterator>{auto & v=this->view_to_build_from;
+    if(v[0]=='t'&&v[1]=='r'&&v[2]=='u'&&v[3]=='e')
+    {
+        return {JsonValue(true),this->view_to_build_from.begin()+4};
+    }
+     if(v[0]=='f'&&v[1]=='a'&&v[2]=='l'&&v[3]=='s'&&v[4]=='e')
+    {
+        return {JsonValue(false),this->view_to_build_from.begin()+5};
+    }
+    
+    
+        throw LineError("error when parsing JSON value type",this->view_to_build_from.begin());
+    
+
+    }();
     break;
     default:
-        throw LineError("error when parsing JSON value type",this->view_to_build_from);
+        throw LineError("error when parsing JSON value type",this->view_to_build_from.begin());
     }
 
-
+throw std::logic_error("never reach here");
   }
 
-bool expect_right_brace_with_embedded_condition( UnicodeStringViewIterator it)
+  UnicodeStringViewIterator JsonValue::JsonValueBuilder:: expect_right_brace_or_right_bracket_with_embedded_condition( bool is_right_brace_expected)
 {
+    u_int32_t l= is_right_brace_expected?'{':'[',r= is_right_brace_expected?'}':']';
+
     bool is_current_char_escaped = false;
     bool is_in_string = false;
-    uint32_t extra_left_brace_count = 0;
-    uint32_t right_brace_encountered_count = 0;
-    while(true)
+    uint32_t l_count = 0;
+    uint32_t r_encountered_count = 0;
+    for(auto it=this->view_to_build_from.begin();it!=this->view_to_build_from.end();++it)
     {
         if (is_current_char_escaped)
         {
@@ -141,25 +277,22 @@ bool expect_right_brace_with_embedded_condition( UnicodeStringViewIterator it)
                 {
                     is_in_string=true;
                 }
-                else if(c=='{')
+                else if(c==l)
                 {
-                    extra_left_brace_count++;
+                    l_count++;
                 }
-                else if(c=='}')
+                else if(c==r)
                 {
-                    right_brace_encountered_count++;
-                    if(right_brace_encountered_count+1==extra_left_brace_count)
+                    r_encountered_count++;
+                    if(r_encountered_count==l_count)
                     {
-                        return true;
+                        return it+1;
                     }
                 }
             }
 
         }
-        ++it ;
+
     }
-}
-bool expect_right_bracket_with_embedded_condition(UnicodeStringViewIterator it)
-{
-return false;
+    throw LineError("error when parsing JSON value type",this->view_to_build_from.begin());
 }

@@ -19,44 +19,14 @@
 #include <span>
 #include <iostream>
 #include <simple_json.hpp>
-inline bool is_whitespace(u_int32_t c) {return c==' ' || c=='\t' || c=='\n' || c=='\r';}
+inline bool is_end_char(u_int32_t c) {return c==',' || c=='}' || c==']' ;}
+inline   bool is_whitespace(u_int32_t c) {return c==' ' || c=='\t' || c=='\n' || c=='\r';}
 
 using std::string;
 class FileGuard
 {
 
 
-};
-class LineError: std::runtime_error
-{
-    UnicodeStringView where;
-    string msg;
-    public:
-    const char * what() const noexcept override
-    {
-        return msg.c_str();
-    }
-    LineError(const std::string& ms,UnicodeStringView where):std::runtime_error(ms),msg(ms),where(where){
-
-        auto forward_iter=where.begin(),back_iter=where.begin();
-        while(true)
-        {
-            --forward_iter;
-            if(*forward_iter=='\n')//dangerous
-            {
-                break;
-            }
-        }
-        while(true)
-        {
-            ++back_iter;
-            if(*back_iter=='\n')
-            {
-                break;
-            }
-        }
-        msg+="\n"+std::string(forward_iter,back_iter);
-    }
 };
 class LoopGuard
 {
@@ -71,5 +41,40 @@ class LoopGuard
     }
 }
 };
+class LineError: std::runtime_error
+{
+    UnicodeStringViewIterator iter;
+    string msg;
+    public:
+    const char * what() const noexcept override
+    {
+        return msg.c_str();
+    }
+    LineError(const std::string& ms,UnicodeStringViewIterator iter):std::runtime_error(ms),iter(iter),msg(ms){
+
+        auto forward_iter=iter,back_iter=iter;
+        LoopGuard guard1,guard2;
+        while(true)
+        {
+            guard1();
+            --forward_iter;
+            if(*forward_iter=='\n')//dangerous
+            {
+                break;
+            }
+        }
+        while(true)
+        {
+            guard2();
+            ++back_iter;
+            if(*back_iter=='\n')
+            {
+                break;
+            }
+        }
+        msg+="\n cuurent condition:\n before:\n"+std::string(forward_iter,iter)+"\nafter:\n" +string(iter,back_iter)+'\n';
+    }
+};
+
 
 #endif // COMMON_HPP

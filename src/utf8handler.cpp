@@ -21,7 +21,7 @@
             size_t prefix_bits_count=0;
             fill_bit_piece(result,prefix_bits_count,*iter,size+1);
             prefix_bits_count+=8-(size+1);
-            for(int i=1;i<size;i++)
+            for(u_int32_t i=1;i<size;i++)
             {
                 ++iter;
                 fill_bit_piece(result,prefix_bits_count,*iter,2);

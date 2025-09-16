@@ -41,7 +41,10 @@ void JsonObjectBuilder::build_from(std::filesystem::path const &path)
     size_t filesize = std::filesystem::file_size(path);
     std::string buffer(std::istreambuf_iterator<char>(file), {});
     file.close();
-
+    if(buffer.size()!=filesize)
+    {
+        throw std::runtime_error("File size mismatch");
+    }
     build_cache.json_file_str = UTF8Adaptor::decode(buffer);
     build_cache.json_obj_str = UnicodeStringView(build_cache.json_file_str);
 
@@ -128,7 +131,7 @@ bool JsonObjectBuilder::build_with_cache() const
             }
             else
             {
-                throw LineError("Expecting ',' or '}'", this->build_cache.json_obj_str);
+                throw LineError("Expecting ',' or '}'", iter);
             }
             break;
         }
@@ -160,15 +163,15 @@ void JsonObjectBuilder::BuildCache::expect_char(UnicodeStringViewIterator &it, u
                 ++it;
                 return ;
             }
-            throw LineError("Unexpected character", this->json_obj_str);
+            throw LineError("Unexpected character", it);
         }
         ++it;
     }
-    throw LineError("Unexpected end of file", this->json_obj_str);
+    throw LineError("Unexpected end of file", it);
 }
  bool JsonObjectBuilder::BuildCache:: expect_comma_or_right_brace(UnicodeStringViewIterator &it,bool is_comma_expected) const
  {
-    auto c=is_comma_expected? ',':'}';
+    u_int32_t c=is_comma_expected? ',':'}';
   while (it != this->json_obj_str.end())
     {
         if (!is_whitespace(*it))
@@ -201,7 +204,7 @@ string JsonObjectBuilder::BuildCache::get_key(UnicodeStringViewIterator &it) con
         }
         if (!is_whitespace(*it))
         {
-            throw LineError("Expecting '\"' or any whitespace character", this->json_obj_str);
+            throw LineError("Expecting '\"' or any whitespace character", it);
         }
         it++;
     }
@@ -228,12 +231,14 @@ string JsonObjectBuilder::BuildCache::get_key(UnicodeStringViewIterator &it) con
         }
         ++it;
     }
-    throw LineError("Unexpected end of file", this->json_obj_str);
+    throw LineError("Unexpected end of file", it);
 }
 JsonValue JsonObjectBuilder::BuildCache::parse_value(UnicodeStringViewIterator &it) const
 {
-
-    return JsonValue::JsonValueBuilder(UnicodeStringView(it, this->json_obj_str.end())).build();
-}
+auto && [result,end]=
+     JsonValue::JsonValueBuilder(UnicodeStringView(it, this->json_obj_str.end())).build();
+    it=end;
+    return result;
+    }
 
 #pragma endregion

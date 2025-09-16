@@ -3,6 +3,7 @@
 #define JSON_HPP
 #include "jsonobject.hpp"
 #include "jsonvalue.hpp"
+#include "functional"
 namespace simple_json
 {
 JsonObject parse(std::filesystem::path const& path);

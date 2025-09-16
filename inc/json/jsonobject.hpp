@@ -46,6 +46,7 @@ get_product返回对应版本的product,如果版本不存在则返回空对象�
 
 class JsonObjectBuilder
 {
+
     struct BuildCache
     {
         UnicodeString json_file_str;
