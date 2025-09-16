@@ -15,7 +15,7 @@
 class UTF8Adaptor
 {
     std::string &raw_str;
-    std::vector<u_int32_t> decoded_str;
+    std::vector<uint32_t> decoded_str;
 protected:
     
     /**
@@ -24,7 +24,7 @@ protected:
      * @param it 字符串迭代器 String iterator
      * @return 包含字符长度和Unicode码点的元组 Tuple containing character length and Unicode code point
      */
-    static std::tuple <size_t,u_int32_t> decode_one_char(std::string_view::const_iterator it) ;
+    static std::tuple <size_t,uint32_t> decode_one_char(std::string_view::const_iterator it) ;
     
     /**
      * @brief 解码单个UTF-8字符（字符串和位置版本）
@@ -33,7 +33,7 @@ protected:
      * @param pos 字符位置 Character position
      * @return 包含字符长度和Unicode码点的元组 Tuple containing character length and Unicode code point
      */
-    static std::tuple <size_t,u_int32_t> decode_one_char(std::string_view str, size_t pos) 
+    static std::tuple <size_t,uint32_t> decode_one_char(std::string_view str, size_t pos) 
     {
         return decode_one_char(str.begin() + pos);
     }
@@ -52,7 +52,7 @@ public:
      * @param vec Unicode码点向量 Unicode code points vector
      * @return 编码后的UTF-8字符串 Encoded UTF-8 string
      */
-    static std::string encode(std::vector<u_int32_t> vec);
+    static std::string encode(std::vector<uint32_t> vec);
     
     /**
      * @brief 将UTF-8字符串解码为Unicode码点向量
@@ -60,7 +60,7 @@ public:
      * @param str UTF-8字符串 UTF-8 string
      * @return 解码后的Unicode码点向量 Decoded Unicode code points vector
      */
-    static std::vector<u_int32_t> decode(std::string_view str);
+    static std::vector<uint32_t> decode(std::string_view str);
 
     UTF8Adaptor(std::string &str) : raw_str(str)
     {
@@ -70,7 +70,7 @@ public:
         }
         decoded_str = decode(str);
     }
-    const std::vector<u_int32_t> &get_decoded_str() const
+    const std::vector<uint32_t> &get_decoded_str() const
     {
         return decoded_str;
     }

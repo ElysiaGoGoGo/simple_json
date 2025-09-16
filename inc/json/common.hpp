@@ -31,7 +31,7 @@
  * @param c 要检查的字符 The character to check
  * @return 如果是结束字符返回true，否则返回false Returns true if it's an end character, false otherwise
  */
-inline bool is_end_char(u_int32_t c) {return c==',' || c=='}' || c==']' ;}
+inline bool is_end_char(uint32_t c) {return c==',' || c=='}' || c==']' ;}
 
 /**
  * @brief 检查字符是否为空白字符
@@ -39,7 +39,7 @@ inline bool is_end_char(u_int32_t c) {return c==',' || c=='}' || c==']' ;}
  * @param c 要检查的字符 The character to check
  * @return 如果是空白字符返回true，否则返回false Returns true if it's a whitespace character, false otherwise
  */
-inline bool is_whitespace(u_int32_t c) {return c==' ' || c=='\t' || c=='\n' || c=='\r';}
+inline bool is_whitespace(uint32_t c) {return c==' ' || c=='\t' || c=='\n' || c=='\r';}
 
 using std::string;
 

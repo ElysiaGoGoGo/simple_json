@@ -257,7 +257,7 @@ throw std::logic_error("never reach here");
 
   UnicodeStringViewIterator JsonValue::JsonValueBuilder:: expect_right_brace_or_right_bracket_with_embedded_condition( bool is_right_brace_expected)
 {
-    u_int32_t l= is_right_brace_expected?'{':'[',r= is_right_brace_expected?'}':']';
+    uint32_t l= is_right_brace_expected?'{':'[',r= is_right_brace_expected?'}':']';
 
     bool is_current_char_escaped = false;
     bool is_in_string = false;

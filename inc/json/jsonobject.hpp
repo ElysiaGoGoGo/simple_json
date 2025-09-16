@@ -83,7 +83,7 @@ class JsonObjectBuilder
          * @param it 迭代器引用 Iterator reference
          * @param c 期望的字符 Expected character
          */
-        void expect_char(UnicodeStringViewIterator &it, u_int32_t c) const;
+        void expect_char(UnicodeStringViewIterator &it, uint32_t c) const;
         
         /**
          * @brief 期望逗号或右大括号

@@ -1,70 +1,69 @@
 #include "json/utf8handler.hpp"
 #include <array>
-     std::tuple <size_t,u_int32_t> UTF8Adaptor::decode_one_char(std::string_view::const_iterator it) 
-      {
-        auto sum=[it](u_int32_t size){
-            auto iter=it;
-            auto fill_bit_piece=[](u_int32_t & integer,size_t start_of_integer_to_fill,char c,size_t start_of_valid_bitpiece){
-                u_char the_byte=c;
-                the_byte&=((u_char)0b1111'1111>>start_of_valid_bitpiece);
+#include <cstdint>
+#include <bitset>
 
-                integer|= ((static_cast<u_int32_t>(the_byte)) <<(24-start_of_integer_to_fill+start_of_valid_bitpiece)) ;
-                return integer;
-            };
-            /*
-            u_int32_t test=0b1110'1000'0000'0000'0000'0000'0000'0000;
-        cout<<"fill_bit_piece test:\n"<<"fill_bit_piece(0b1110'0000,3,(char)0b1101'1100,3)   result:  "<<bitset<32>( fill_bit_piece(test,29,(char)0b1101'0101,5))<<"expected:"<<"0b111'111010"<<"\n\n\n";
-*/
-            //将一个字节的特定bit片段拼凑到另外一个32整形的某个位置a
-            //start_of_valid_bitpiece表示有效bit片段的起始位置(index from 0 to 7),并且从高位到低位方向，直到最低位a,and indicate the number of bits are ignored which are in the front of the byte
-            u_int32_t result=0;
-            size_t prefix_bits_count=0;
-            fill_bit_piece(result,prefix_bits_count,*iter,size+1);
-            prefix_bits_count+=8-(size+1);
-            for(u_int32_t i=1;i<size;i++)
-            {
-                ++iter;
-                fill_bit_piece(result,prefix_bits_count,*iter,2);
-                prefix_bits_count+=6;
-  
-            }
-#ifdef DEBUG
-          std::cout<<"prefix_bits_count:"<<prefix_bits_count<<"result of sum :"<<std::bitset<32>(result)<<"\n";
-#endif
-            return result>>(32-size*8);
-
-        };
-        u_char c=*it;
-        if(c>=0b1111'0000)
-        {    
-            return {4,sum(4)};
-        }
-        if(c>=0b1110'0000)
-        {
-            return {3,sum(3)};
-        }
-        if(c>=0b1100'0000)
-        {
-            return {2,sum(2)};
-        }
-        //ascii
-        return {1,c};
-
-    }
-
-    bool UTF8Adaptor::IsValidUTF8(std::string_view str)
+std::tuple<size_t, uint32_t> UTF8Adaptor::decode_one_char(std::string_view::const_iterator it)
 {
+    auto sum = [it](uint32_t size) {
+        auto iter = it;
+        auto fill_bit_piece = [](uint32_t& integer, size_t start_of_integer_to_fill, char c, size_t start_of_valid_bitpiece) {
+            unsigned char the_byte = static_cast<unsigned char>(c);
+            the_byte &= (((unsigned char)(0b11111111)) >> (start_of_valid_bitpiece));
 
+            integer |= ((static_cast<uint32_t>(the_byte)) << (24 - start_of_integer_to_fill + start_of_valid_bitpiece));
+            return integer;
+        };
+        /*
+        uint32_t test=0b1110'1000'0000'0000'0000'0000'0000'0000;
+        cout<<"fill_bit_piece test:\n"<<"fill_bit_piece(0b1110'0000,3,(char)0b1101'1100,3)   result:  "<<bitset<32>( fill_bit_piece(test,29,(char)0b1101'0101,5))<<"expected:"<<"0b111'111010"<<"\n\n\n";
+        */
+        //将一个字节的特定bit片段拼凑到另外一个32整形的某个位置a
+        //start_of_valid_bitpiece表示有效bit片段的起始位置(index from 0 to 7),并且从高位到低位方向，直到最低位a,and indicate the number of bits are ignored which are in the front of the byte
+        uint32_t result = 0;
+        size_t prefix_bits_count = 0;
+        fill_bit_piece(result, prefix_bits_count, *iter, size + 1);
+        prefix_bits_count += 8 - (size + 1);
+        for (uint32_t i = 1; i < size; i++)
+        {
+            ++iter;
+            fill_bit_piece(result, prefix_bits_count, *iter, 2);
+            prefix_bits_count += 6;
+        }
+#ifdef DEBUG
+        std::cout << "prefix_bits_count:" << prefix_bits_count << "result of sum :" << std::bitset<32>(result) << "\n";
+#endif
+        return result >> (32 - size * 8);
+    };
+    
+    unsigned char c = static_cast<unsigned char>(*it);
+    if (c >= 0b11110000)
+    {
+        return {4, sum(4)};
+    }
+    if (c >= 0b11100000)
+    {
+        return {3, sum(3)};
+    }
+    if (c >= 0b11000000)
+    {
+        return {2, sum(2)};
+    }
+    //ascii
+    return {1, static_cast<uint32_t>(c)};
+}
+
+bool UTF8Adaptor::IsValidUTF8(std::string_view str)
+{
     bool is_current_byte_start = true;
-    u_int32_t bytes_rested_for_current_char = 0;
+    uint32_t bytes_rested_for_current_char = 0;
     for (auto c : str)
     {
-
         if (is_current_byte_start)
         {
 #define EASY_READ 1
 #if EASY_READ
-            constexpr u_int8_t FIRST_BIT_MASK = 0b1000'0000;
+            constexpr uint8_t FIRST_BIT_MASK = 0b10000000;
             if (c & FIRST_BIT_MASK)
             {
                 // non-ascii
@@ -96,14 +95,13 @@
             }
 
 #else
-            constexpr u_int8_t FIRST_BIT_MASK = 0b1000'0000;
-            constexpr std::array<u_int8_t, 8> UTF8_FIRST_BYTE_MARK{0b1000'0000, 0b1100'0000, 0b1110'0000, 0b1111'0000, 0b1111'1000, 0b1111'1100, 0b1111'1110, 0b1111'1111};
+            constexpr uint8_t FIRST_BIT_MASK = 0b10000000;
+            constexpr std::array<uint8_t, 8> UTF8_FIRST_BYTE_MARK{0b10000000, 0b11000000, 0b11100000, 0b11110000, 0b11111000, 0b11111100, 0b11111110, 0b11111111};
             int i;
             for (i = 0; i < 4; ++i)
             {
                 if (!(c & FIRST_BIT_MASK)) // first bit is not 1?
                 {
-
                     bytes_rested_for_current_char = i - 1;
                     break;
                 }
@@ -129,7 +127,7 @@
             {
                 is_current_byte_start = true;
             }
-            if ((c & 0b1100'0000) != 0b1000'0000)
+            if ((c & 0b11000000) != 0b10000000)
             {
                 // non-continuation byte 
                 return false;
@@ -140,27 +138,27 @@
     return true;
 }
 
-std::string UTF8Adaptor::encode(std::vector<u_int32_t> vec)
+std::string UTF8Adaptor::encode(std::vector<uint32_t> vec)
 {
     std::string result;
-    result.reserve(vec.size()*4);
-    for(auto code:vec)
+    result.reserve(vec.size() * 4);
+    for (auto code : vec)
     {
         //TODO
     }
-    
+    return result; // Added missing return statement
 }
-std::vector<u_int32_t> UTF8Adaptor::decode(std::string_view str)
+
+std::vector<uint32_t> UTF8Adaptor::decode(std::string_view str)
 {
-    std::vector<u_int32_t> result;
+    std::vector<uint32_t> result;
     result.reserve(str.size());
-       auto iter=str.begin();
-    while(iter!=str.end())
+    auto iter = str.begin();
+    while (iter != str.end())
     {
-        auto [size,code]=decode_one_char(iter);
-        iter+=size;
+        auto [size, code] = decode_one_char(iter);
+        iter += size;
         result.emplace_back(code);
     }
     return result;
-
 }

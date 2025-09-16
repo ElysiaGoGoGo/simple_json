@@ -162,7 +162,7 @@ OUT_OF_LOOP:
 #pragma endregion
 
 #pragma region BuildCache Methods
-void JsonObjectBuilder::BuildCache::expect_char(UnicodeStringViewIterator &it, u_int32_t c) const
+void JsonObjectBuilder::BuildCache::expect_char(UnicodeStringViewIterator &it, uint32_t c) const
 {
     while (it != this->json_obj_str.end())
     {
@@ -181,7 +181,7 @@ void JsonObjectBuilder::BuildCache::expect_char(UnicodeStringViewIterator &it, u
 }
  bool JsonObjectBuilder::BuildCache:: expect_comma_or_right_brace(UnicodeStringViewIterator &it,bool is_comma_expected) const
  {
-    u_int32_t c=is_comma_expected? ',':'}';
+    uint32_t c=is_comma_expected? ',':'}';
     auto iter=it;
   while (iter != this->json_obj_str.end())
     {
