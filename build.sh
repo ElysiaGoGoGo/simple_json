@@ -1,3 +1,3 @@
 #/bin/bash
-cmake --preset=debug && cmake --build build && cd build && ctest -C Debug
+cmake --preset=linux_debug && cmake --build build && cd build && ctest -C Debug
 
