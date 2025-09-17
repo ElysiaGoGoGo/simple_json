@@ -41,6 +41,7 @@
     },
     {
       "name": "debug",
+       "binaryDir": "${sourceDir}/build/debug",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_C_FLAGS": "-O0 -g",
@@ -49,6 +50,7 @@
     },
     {
       "name": "release",
+      "binaryDir": "${sourceDir}/build/release",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_C_FLAGS": "-O3",

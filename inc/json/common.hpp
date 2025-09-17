@@ -4,7 +4,23 @@
 
 // Define DEBUG macro for debug output
 // Comment out or undef to disable debug output in release builds
-//#define DEBUG
+#define DEBUG
+#undef DEBUG
+#ifdef DEBUG
+inline void debug_print(UnicodeStringViewIterator iter)
+{
+    auto forward=iter,backward=iter;
+    while(*forward!='\n')
+    {
+        forward++;
+    }
+    while(*backward!='\n')
+    {
+        backward--;
+    }
+    std::cout<<"debug print:\n\ncurrent case:\n"<<std::string(backward+1,forward)<<"\n iter points to the"<<iter-backward<<" value:"<<(char)(*iter)<<'\n\n\n';
+}
+#endif
 
 #include <stdexcept>
 #include <iostream>

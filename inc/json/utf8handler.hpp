@@ -7,7 +7,7 @@
 #include <string_view>
 #include <vector>
 #include <tuple>
-
+#include <span>
 /**
  * @brief UTF-8适配器类，用于处理UTF-8字符串的编码和解码
  * UTF-8 adaptor class for handling UTF-8 string encoding and decoding
@@ -52,7 +52,8 @@ public:
      * @param vec Unicode码点向量 Unicode code points vector
      * @return 编码后的UTF-8字符串 Encoded UTF-8 string
      */
-    static std::string encode(std::vector<u_int32_t> vec);
+    static std::string encode(const std::vector<u_int32_t> & vec);
+    static std::string encode(std::span<const u_int32_t> vec);
     
     /**
      * @brief 将UTF-8字符串解码为Unicode码点向量

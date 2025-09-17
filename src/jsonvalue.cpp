@@ -36,9 +36,7 @@ tuple<string,UnicodeStringViewIterator> JsonValue::JsonValueBuilder::get_string_
         {
             if (*it == '"')
             {
-
-                key.resize(it - start);
-                std::copy(start, it, key.begin());
+                key=UTF8Adaptor::encode(UnicodeString(start, it));
                 ++it;
                 return {key,it};
             }
@@ -192,6 +190,7 @@ UnicodeStringView JsonValue::JsonValueBuilder:: get_Value_range(Type type)
 
     return {array,value_range.end()};
     }
+
     case Type::Object:
     {auto value_range = get_Value_range(type);
     JsonObjectBuilder builder;

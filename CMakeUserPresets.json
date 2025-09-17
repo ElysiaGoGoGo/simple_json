@@ -14,6 +14,30 @@
       "environment": {
         
       }
+    },
+    {
+      "name": "linux_release",
+      "inherits": ["release","make"],
+      "environment": {
+        
+      }
+    }
+  ],
+  "buildPresets": [
+
+    {
+      "name": "win_debug",
+      "configurePreset": "win_debug"
+
+    } ,
+    {
+      "name": "linux_debug",
+      "configurePreset": "linux_debug"
+      
+    },
+    {
+      "name": "linux_release",
+      "configurePreset": "linux_release"
     }
   ]
 }

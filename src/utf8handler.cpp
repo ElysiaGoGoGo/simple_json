@@ -1,57 +1,9 @@
 #include "json/utf8handler.hpp"
 #include <array>
-     std::tuple <size_t,u_int32_t> UTF8Adaptor::decode_one_char(std::string_view::const_iterator it) 
-      {
-        auto sum=[it](u_int32_t size){
-            auto iter=it;
-            auto fill_bit_piece=[](u_int32_t & integer,size_t start_of_integer_to_fill,char c,size_t start_of_valid_bitpiece){
-                u_char the_byte=c;
-                the_byte&=((u_char)0b1111'1111>>start_of_valid_bitpiece);
-
-                integer|= ((static_cast<u_int32_t>(the_byte)) <<(24-start_of_integer_to_fill+start_of_valid_bitpiece)) ;
-                return integer;
-            };
-            /*
-            u_int32_t test=0b1110'1000'0000'0000'0000'0000'0000'0000;
-        cout<<"fill_bit_piece test:\n"<<"fill_bit_piece(0b1110'0000,3,(char)0b1101'1100,3)   result:  "<<bitset<32>( fill_bit_piece(test,29,(char)0b1101'0101,5))<<"expected:"<<"0b111'111010"<<"\n\n\n";
-*/
-            //将一个字节的特定bit片段拼凑到另外一个32整形的某个位置a
-            //start_of_valid_bitpiece表示有效bit片段的起始位置(index from 0 to 7),并且从高位到低位方向，直到最低位a,and indicate the number of bits are ignored which are in the front of the byte
-            u_int32_t result=0;
-            size_t prefix_bits_count=0;
-            fill_bit_piece(result,prefix_bits_count,*iter,size+1);
-            prefix_bits_count+=8-(size+1);
-            for(u_int32_t i=1;i<size;i++)
-            {
-                ++iter;
-                fill_bit_piece(result,prefix_bits_count,*iter,2);
-                prefix_bits_count+=6;
-  
-            }
-#ifdef DEBUG
-          std::cout<<"prefix_bits_count:"<<prefix_bits_count<<"result of sum :"<<std::bitset<32>(result)<<"\n";
-#endif
-            return result>>(32-size*8);
-
-        };
-        u_char c=*it;
-        if(c>=0b1111'0000)
-        {    
-            return {4,sum(4)};
-        }
-        if(c>=0b1110'0000)
-        {
-            return {3,sum(3)};
-        }
-        if(c>=0b1100'0000)
-        {
-            return {2,sum(2)};
-        }
-        //ascii
-        return {1,c};
-
-    }
-
+#include <span>
+#include <vector>
+using std::string;
+    
     bool UTF8Adaptor::IsValidUTF8(std::string_view str)
 {
 
@@ -140,16 +92,49 @@
     return true;
 }
 
-std::string UTF8Adaptor::encode(std::vector<u_int32_t> vec)
-{
-    std::string result;
-    result.reserve(vec.size()*4);
-    for(auto code:vec)
+    std::string UTF8Adaptor::encode(const std::vector<u_int32_t> & vec)
     {
-        //TODO
+return encode(std::span<const u_int32_t>(vec));
+
     }
-    
-}
+     std::string UTF8Adaptor:: encode(std::span<const u_int32_t> vec)
+    {
+        string utf8_str;
+        utf8_str.reserve(vec.size()*4);
+        for(auto code : vec)
+        {
+            if(code<0x80)//0x0000 - 0x007f
+            {
+                utf8_str.push_back(code);
+            }
+            else if(code<0x800)
+            {
+                utf8_str.push_back(0b1100'0000 | (unsigned char)(code >> 6));
+                utf8_str.push_back(0b1000'0000 | (unsigned char)(code & 0b0011'1111));
+            }
+            else if(code <0x10000)
+            {
+                   utf8_str.push_back(0b1110'0000 | (unsigned char)(code >> 12));
+                    code &=0b1111'1111'1111;
+                utf8_str.push_back(0b1000'0000 | (unsigned char)(code >> 6));
+                utf8_str.push_back(0b1000'0000 | (unsigned char)(code & 0b0011'1111));
+            }
+            else if(code<0x110000)
+            {
+                utf8_str.push_back(0b1111'0000 | (unsigned char)(code >> 18));
+                code &=0b0011'1111'1111'1111'1111;
+                utf8_str.push_back(0b1000'0000 | (unsigned char)(code >> 12));
+                code &=0b1111'1111'1111;
+                utf8_str.push_back(0b1000'0000 | (unsigned char)(code >> 6));
+                utf8_str.push_back(0b1000'0000 | (unsigned char)(code & 0b0011'1111));
+            }
+            else
+            {
+                throw std::invalid_argument("Invalid unicode point!");
+            }
+        }
+        return utf8_str;
+    }
 std::vector<u_int32_t> UTF8Adaptor::decode(std::string_view str)
 {
     std::vector<u_int32_t> result;
@@ -164,3 +149,99 @@ std::vector<u_int32_t> UTF8Adaptor::decode(std::string_view str)
     return result;
 
 }
+/*
+
+ std::tuple <size_t,u_int32_t> UTF8Adaptor::decode_one_char(std::string_view::const_iterator it) 
+      {
+        auto sum=[it](u_int32_t size){
+            auto iter=it;
+            auto fill_bit_piece=[](u_int32_t & integer,size_t start_of_integer_to_fill,char c,size_t start_of_valid_bitpiece){
+                u_char the_byte=c;
+                the_byte&=((u_char)0b1111'1111>>start_of_valid_bitpiece);
+
+                integer|= ((static_cast<u_int32_t>(the_byte)) <<(24-start_of_integer_to_fill+start_of_valid_bitpiece)) ;
+                return integer;
+            };
+            
+        //    u_int32_t test=0b1110'1000'0000'0000'0000'0000'0000'0000;
+     //   cout<<"fill_bit_piece test:\n"<<"fill_bit_piece(0b1110'0000,3,(char)0b1101'1100,3)   result:  "<<bitset<32>( fill_bit_piece(test,29,(char)0b1101'0101,5))<<"expected:"<<"0b111'111010"<<"\n\n\n";
+
+            //将一个字节的特定bit片段拼凑到另外一个32整形的某个位置a
+            //start_of_valid_bitpiece表示有效bit片段的起始位置(index from 0 to 7),并且从高位到低位方向，直到最低位a,and indicate the number of bits are ignored which are in the front of the byte
+            u_int32_t result=0;
+            size_t prefix_bits_count=0;
+            fill_bit_piece(result,prefix_bits_count,*iter,size+1);
+            prefix_bits_count+=8-(size+1);
+            for(u_int32_t i=1;i<size;i++)
+            {
+                ++iter;
+                fill_bit_piece(result,prefix_bits_count,*iter,2);
+                prefix_bits_count+=6;
+  
+            }
+#ifdef DEBUG
+          std::cout<<"prefix_bits_count:"<<prefix_bits_count<<"result of sum :"<<std::bitset<32>(result)<<"\n";
+#endif
+            return result>>(32-size*8);
+
+        };
+        u_char c=*it;
+        if(c>=0b1111'0000)
+        {    
+            return {4,sum(4)};
+        }
+        if(c>=0b1110'0000)
+        {
+            return {3,sum(3)};
+        }
+        if(c>=0b1100'0000)
+        {
+            return {2,sum(2)};
+        }
+        //ascii
+        return {1,c};
+
+    }
+*/
+ std::tuple <size_t,u_int32_t> UTF8Adaptor::decode_one_char(std::string_view::const_iterator it) 
+      {
+        bool is_current_byte_start = true;
+        u_int32_t result=0x0;
+        
+        auto get_single_utf8_char_size=[](auto iter)->size_t{
+        if(auto c=*iter;!c&0b1000'0000) 
+        {
+            //ascii
+            //TODO
+        }   
+        else
+        {
+
+        }
+        };
+        auto get_first_byte_bits_piece_belonging_to_char=[](auto iter,size_t effective_bits_count)->unsigned char{
+
+        };
+        auto get_other_byte_bits_piece_belonging_to_char=[](auto iter)-> unsigned char
+        {
+
+        };
+
+        /*
+        when start_of_valid_bitpiece=2,the byte is 0011 1110,then 11 1110 will be pasted.the 00 in the front are deprecated
+                                                   --: 2 bits in total  
+        when start_of_integer_to_fill =24,result is 0x 1234 5678 9012 3456,from first bit of hex '3' of "3456" on,bits of result will be covered by bits from the byte  
+                                                       ---- ---- ---- : 24bits in total
+        */
+        
+        auto paste_bits_to_result=[&result](unsigned char byte,size_t start_of_valid_bitpiece,size_t start_of_integer_to_fill)
+        {
+            decltype(result) expanded=byte;
+            expanded<<=(24-start_of_integer_to_fill+start_of_valid_bitpiece);
+            result|=expanded;
+        };
+        
+
+
+
+    }
