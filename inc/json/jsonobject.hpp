@@ -14,7 +14,8 @@
 #include <span>
 #include <iterator>
 #include <iostream>
-
+using std::ostream;
+using std::ifstream;
 using std::span;
 using std::string;
 using std::variant;
@@ -60,12 +61,22 @@ using UnicodeStringView = std::span<const UnicodeType>;
  * Unicode string view iterator type definition
  */
 using UnicodeStringViewIterator = UnicodeStringView::iterator;
+struct Accurate_Float : string
+{
+operator double()const
+{
+    return std::stod(*this);
+}
+
+};
 namespace fs = std::filesystem;
+
 
 /**
  * @brief JSON对象构建器类，用于构建和解析JSON对象
  * JSON object builder class for building and parsing JSON objects
  */
+
 class JsonObjectBuilder
 {
     /**
@@ -123,16 +134,17 @@ public:
     /**
      * @brief 重置构建器状态
      * Reset builder state
-     * @param forcereset 是否强制重置 Whether to force reset
+     * @param force_reset 是否强制重置 Whether to force reset
      * @return 重置是否成功 Whether reset was successful
      */
-    bool reset(bool forcereset = false);
+    bool reset(bool force_reset = false);
     
     /**
      * @brief 从文件路径构建JSON对象
      * Build JSON object from file path
      * @param path 文件路径 File path
      */
+
     void build_from(std::filesystem::path const &path);
     
     /**
@@ -140,8 +152,9 @@ public:
      * Build JSON object from Unicode string view
      * @param json_str Unicode字符串视图 Unicode string view
      */
-    void build_from(UnicodeStringView json_str);
-    
+    void build_from(const UnicodeStringView json_str);
+ static     void add(JsonObject & obj,UnicodeStringView json_str);
+
     /**
      * @brief 获取构建的产品（JSON对象）
      * Get the built product (JSON object)

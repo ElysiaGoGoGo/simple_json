@@ -29,6 +29,37 @@ void simple_json::dump(JsonObject const &obj, std::filesystem::path const &path)
 {
   // TODO: 实现JSON对象转储功能 Implement JSON object dump functionality
   std::ofstream file(path);
-  string json_str;
+  file << obj;
 
+}
+string simple_json:: walk_through(JsonObject const& obj)
+{
+  string result="{";
+  bool is_first_pair=true;
+  for ( const auto & [key, value] : obj)
+  {
+    if ( is_first_pair )
+    {
+      is_first_pair=false;
+    }
+    else
+    {
+      result.push_back(',');
+    }
+    result+= (key+":"+value.to_string())  ;
+  }
+  result.push_back('}');
+return  result;
+}
+ostream& operator<<(ostream& os, const JsonObject& obj)
+{
+os<<simple_json:: walk_through(obj);
+  return os;
+}
+ifstream& operator>>(ifstream& is, JsonObject& obj)
+{
+  const std::string buffer{std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>()};
+  UnicodeString decode_str=UTF8Adaptor::decode(buffer);
+  JsonObjectBuilder ::add(obj,decode_str);
+  return is;
 }

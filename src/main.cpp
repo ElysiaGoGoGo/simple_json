@@ -6,7 +6,6 @@
 
 
 int main() {    
-
     std::cout << "Hello, World!" << std::endl;
   auto a=  UTF8Adaptor::encode({0x6211});
   string s="我";
@@ -16,13 +15,21 @@ int main() {
    auto b=  UTF8Adaptor::decode(s);
 
     std::cout<<UTF8Adaptor::encode(UTF8Adaptor::decode("你好，世界！\n"));
-auto s="\u6211";
-       auto && obj = simple_json::parse("./CMakePresets.json");
+auto s1="\u6211";
+    std::cout<<std::filesystem::current_path()<<std::endl;
+#ifdef _WIN32
+    auto && obj = simple_json::parse("./CMakePresets.json");
+#else
+    auto && obj = simple_json::parse("/home/baka/.config/Code/User/globalStorage/github.copilot-chat/commandEmbeddings.json");
+#endif
+
+
     auto & cp =std::get<JsonArray>(obj["configurePresets"]);
-    auto & name = std::get<string>( std::get<JsonObject>(cp[0])["name"]);
+    const auto & name = std::get<string>( std::get<JsonObject>(cp[0])["name"]);
 
 
-   std::cout<<"name: "<<name<<std::endl;
+   std::cout<<"obj1: \n"<<obj<<std::endl;
+
 
 return 0;
 }

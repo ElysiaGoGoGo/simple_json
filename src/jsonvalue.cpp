@@ -1,6 +1,6 @@
 
 #include "simple_json.hpp"
-
+#include <regex>
 /**
  * @brief 获取字符串值和结束迭代器
  * Get string value and end iterator
@@ -74,41 +74,35 @@ JsonValue::Type JsonValue::JsonValueBuilder:: getType()const
         case '\t':
         case '\r':
             throw LineError("Unexpected whitespace when parsing JSON value type", this->view_to_build_from.begin());
-            
         default:
         {
-            if (*it >= '0' && *it <= '9')
+            //([+-]?\d+)(\.\d+)?(e[+-]?\d+)?
+            enum class State
             {
-                while (true)
+                Num_Sign,
+                Num_Before_Dot,
+                Dot,
+                Num_After_Dot,
+                E_Of_Scientific_Notation,
+                Sign_After_E,
+                Num_After_E,
+                Non_Part_Of_Num
+
+            };
+            State state = State::Num_Sign;
+            while(it!= this->view_to_build_from.end())
+            {
+                switch (state)
                 {
-                    ++it;
-                    if (*it < '0' || *it > '9')
-                    {
-                        if (*it == '.')
-                        {
-                                return Type::Float;
-                        }
-                        else if (*it == ',')
-                        {
-                            return Type::Integer;
-                        }
-                        else
-                        {
-                            if (is_whitespace(*it))
-                            {
-                                return Type::Integer;
-                            }
-                            else
-                            {
-                                throw LineError("error when parsing JSON value type", this->view_to_build_from.begin());
-                            }
-                        }
-                    }
+
+                    //TODO
                 }
             }
-            throw LineError("error when parsing JSON value type", this->view_to_build_from.begin());
+
+
+
         }
-        }
+    }
 
         ++it;
     }
@@ -224,7 +218,7 @@ UnicodeStringView JsonValue::JsonValueBuilder:: get_Value_range(Type type)
     {
         if(is_whitespace(*iter)||is_end_char(*iter))
         {
-            return {std::stod(std::string(view_to_build_from.begin(),iter)),iter};
+            return {std::string(view_to_build_from.begin(),iter),iter};
         }
     }
     throw LineError("error when parsing JSON value type",this->view_to_build_from.begin());
@@ -254,7 +248,59 @@ UnicodeStringView JsonValue::JsonValueBuilder:: get_Value_range(Type type)
 throw std::logic_error("never reach here");
   }
 
-  UnicodeStringViewIterator JsonValue::JsonValueBuilder:: expect_right_brace_or_right_bracket_with_embedded_condition( bool is_right_brace_expected)
+string JsonValue::to_string() const
+{
+    string result;
+    std::visit([&](auto && arg)
+    {
+        using T = std::decay_t<decltype(arg)>;
+        if constexpr (std::is_same_v<T, string>)
+        {
+            result="\""+arg+"\"";
+        }
+        else if constexpr (std::is_same_v<T, bool>)
+        {
+            result=arg?"true":"false";
+        }
+        else if constexpr (std::is_same_v<T, Accurate_Float>)
+        {
+            result=arg;
+        }
+        else if constexpr (std::is_same_v<T, int>)
+        {
+            result=std::to_string(arg);
+        }
+        else if constexpr (std::is_same_v<T, JsonArray>)
+        {
+            result.push_back('[');
+            bool first=true;
+            for (const auto & v:arg)
+            {
+                if(first)
+                {
+                    first=false;
+                }
+                else
+                {
+                    result += ',';
+                }
+               result+= v.to_string();
+            }
+            result.push_back(']');
+        }
+        else if constexpr (std::is_same_v<T, JsonObject>)
+        {
+            result= simple_json::walk_through(arg);
+        }
+        else
+        {
+            result="null";
+        }
+    },*(static_cast<const JsonRawValueType  *>(this)));
+return result;
+}
+
+UnicodeStringViewIterator JsonValue::JsonValueBuilder:: expect_right_brace_or_right_bracket_with_embedded_condition( bool is_right_brace_expected)
 {
     u_int32_t l= is_right_brace_expected?'{':'[',r= is_right_brace_expected?'}':']';
 

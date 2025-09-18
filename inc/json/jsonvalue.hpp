@@ -26,13 +26,13 @@ using std::tuple;
  * @brief JSON原始值类型定义
  * JSON raw value type definition
  */
-using JsonRawValueType = variant<string, bool, double, int, JsonArray, JsonObject, null>;
+using JsonRawValueType = variant<string, bool, Accurate_Float, int, JsonArray, JsonObject, null>;
 
 /**
  * @brief JSON值类，继承自std::variant，表示JSON的各种可能值类型
  * JSON value class, inherits from std::variant, represents various possible JSON value types
  */
-struct JsonValue : variant<string, bool, double, int, JsonArray, JsonObject, null>
+struct JsonValue : variant<string, bool, Accurate_Float, int, JsonArray, JsonObject, null>
 {
     /**
      * @brief JSON值类型枚举
@@ -109,7 +109,7 @@ struct JsonValue : variant<string, bool, double, int, JsonArray, JsonObject, nul
          * Constructor
          * @param str Unicode字符串视图 Unicode string view
          */
-        JsonValueBuilder(UnicodeStringView str) : view_to_build_from(str) {}
+        explicit JsonValueBuilder(const UnicodeStringView str) : view_to_build_from(str) {}
         
         /**
          * @brief 构建JSON值
@@ -123,7 +123,7 @@ struct JsonValue : variant<string, bool, double, int, JsonArray, JsonObject, nul
     JsonValue(const JsonValue &) = default;
     JsonValue(JsonValue &&) = default;
     JsonValue &operator=(const JsonValue &) = default;
-    
+    string to_string() const;
     /**
      * @brief 获取JSON值的类型
      * Get the type of JSON value
@@ -133,13 +133,34 @@ struct JsonValue : variant<string, bool, double, int, JsonArray, JsonObject, nul
     {
         return static_cast<Type>(index());
     }
+    string getTypeString()const
+    {
+    switch (getType())
+    {
+        case Type::String:
+        return "string";
+        case Type::Boolean:
+        return "boolean";
+        case Type::Float:
+        return "float";
+        case Type::Array:
+        return "array";
+        case Type::Object:
+        return "object";
+        case Type::Null:
+        return "null";
+        default:
+        throw std::logic_error("never reach here");
+    }
+
+    }
 
 private:
     /*
     template<typename Type,typename...Args>
     JsonValue(Type&& t,Args&&...args):v(t,std::forward<Args>(args)...) ;
     */
-    using variant<string, bool, double, int, JsonArray, JsonObject, null>::variant;
+    using variant<string, bool, Accurate_Float, int, JsonArray, JsonObject, null>::variant;
 };
 
 #endif // JSONVALUE_HPP

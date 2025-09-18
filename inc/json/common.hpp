@@ -5,7 +5,7 @@
 // Define DEBUG macro for debug output
 // Comment out or undef to disable debug output in release builds
 #define DEBUG
-#undef DEBUG
+
 #ifdef DEBUG
 inline void debug_print(UnicodeStringViewIterator iter)
 {
@@ -117,27 +117,8 @@ public:
      * @param iter 字符串迭代器位置 String iterator position
      */
     LineError(const std::string& ms,UnicodeStringViewIterator iter):std::runtime_error(ms),iter(iter),msg(ms){
-        auto forward_iter=iter,back_iter=iter;
-        LoopGuard guard1,guard2;
-        while(true)
-        {
-            guard1();
-            --forward_iter;
-            if(*forward_iter=='\n')//dangerous
-            {
-                break;
-            }
-        }
-        while(true)
-        {
-            guard2();
-            ++back_iter;
-            if(*back_iter=='\n')
-            {
-                break;
-            }
-        }
-        msg+="\n cuurent condition:\n before:\n"+std::string(forward_iter,iter)+"\nafter:\n" +string(iter,back_iter)+'\n';
+
+
     }
 };
 

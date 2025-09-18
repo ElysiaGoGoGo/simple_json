@@ -9,10 +9,10 @@
 using std::ifstream;
 
 #pragma region Public Methods
-bool JsonObjectBuilder::reset(bool forcereset)
+bool JsonObjectBuilder::reset(bool force_reset)
 {
     build_cache = {};
-    if (forcereset || !this->product_cache.has_value())
+    if (force_reset || !this->product_cache.has_value())
     {
         this->product_cache.reset();
         this->build_cache = {};
@@ -46,11 +46,125 @@ void JsonObjectBuilder::build_from(std::filesystem::path const &path)
 
     this->build_with_cache();
 }
-void JsonObjectBuilder::JsonObjectBuilder::build_from(UnicodeStringView json_str)
+void JsonObjectBuilder::JsonObjectBuilder::build_from(const UnicodeStringView json_str)
 {
 
     build_cache.json_obj_str = json_str;
     this->build_with_cache();
+}
+
+void JsonObjectBuilder::add(JsonObject& obj, const UnicodeStringView json_str)
+{
+
+    BuildCache build_cache;
+    build_cache.json_obj_str = json_str;
+    const auto &decoded_str = build_cache.json_obj_str; // for laziness
+    auto iter = decoded_str.begin();
+    enum class IterStatus
+    {
+        EXPECT_LEFT_BRACE,
+        EXPECT_KEY,
+        EXPECT_COLON,
+        EXPECT_VALUE,
+        EXPECT_COMMA_OR_RIGHT_BRACE,
+        READY_TO_EXIT
+    };
+    auto status = IterStatus::EXPECT_LEFT_BRACE;
+    string key_cache;
+    {
+        auto probe_iter = iter;
+        build_cache.expect_char(probe_iter, '{');
+        while (true)
+        {
+            if (probe_iter >= decoded_str.end())
+            {
+                throw LineError("Unexpected end of obj str", iter);
+            }
+            if (const auto c = *probe_iter; !is_whitespace(c))
+            {
+                if (c == '}')
+                {
+                    // empty object
+                    return;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            ++probe_iter;
+        }
+    }
+
+    while (true)
+    {
+        if (iter >= decoded_str.end())
+        {
+            if (iter == decoded_str.end() && status == IterStatus::READY_TO_EXIT)
+            {
+                break;
+            }
+            throw LineError("Unexpected end of obj str", iter); // throw "str ends not because of status: EXPECT_RIGHT_BRACE";
+        }
+        switch (status)
+        {
+        case IterStatus::EXPECT_LEFT_BRACE:
+
+        {
+            build_cache.expect_char(iter, '{');
+
+            status = IterStatus::EXPECT_KEY;
+        }
+        break;
+        case IterStatus::EXPECT_KEY:
+        {
+            key_cache = std::move(build_cache.get_key(iter));
+            status = IterStatus::EXPECT_COLON;
+            break;
+        }
+        case IterStatus::EXPECT_COLON:
+        {
+            build_cache.expect_char(iter, ':');
+
+            status = IterStatus::EXPECT_VALUE;
+
+            break;
+        }
+        case IterStatus::EXPECT_VALUE:
+        {
+            obj[key_cache] = std::move(build_cache.parse_value(iter));
+
+            status = IterStatus::EXPECT_COMMA_OR_RIGHT_BRACE;
+            break;
+        }
+        case IterStatus::EXPECT_COMMA_OR_RIGHT_BRACE:
+        {
+            if (build_cache.expect_comma_or_right_brace(iter, true))
+            {
+                status = IterStatus::EXPECT_KEY;
+            }
+            else if (build_cache.expect_comma_or_right_brace(iter, false))
+            {
+                status = IterStatus::READY_TO_EXIT;
+            }
+            else
+            {
+                throw LineError("Expecting ',' or '}'", iter);
+            }
+            break;
+        }
+        case IterStatus::READY_TO_EXIT:
+        {
+            goto OUT_OF_LOOP;
+        }
+        }
+    }
+
+OUT_OF_LOOP:
+#if CXX_STANDARD <= 23
+    ;
+#endif
+
 }
 
 #pragma endregion

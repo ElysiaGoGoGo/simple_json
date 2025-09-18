@@ -21,10 +21,11 @@ JsonObject parse(std::filesystem::path const& path);
  * @param path 文件路径 File path
  */
 void dump(JsonObject const& obj, std::filesystem::path const& path);
-
+    string walk_through(JsonObject const& obj);
 
 
 };
-
+ostream& operator<<(ostream& os, const JsonObject& obj);
+ifstream& operator>>(ifstream& is, JsonObject& obj);
 
 #endif // JSON_HPP
