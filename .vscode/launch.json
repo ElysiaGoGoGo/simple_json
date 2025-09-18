@@ -1,0 +1,70 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C++ Debug",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${fileDirname}/${fileBasenameNoExtension}",
+      "args": [
+        "--std=c++20"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "为 gdb 启用整齐打印",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "C/C++: g++ build active file", // 自动编译
+      "miDebuggerPath": "/usr/bin/gdb"
+    },
+    {
+      "name": "(gdb) CMake Debug", // 配置名称，显示在调试下拉列表中
+      "type": "cppdbg", // 调试器类型
+      "request": "launch", // 启动调试会话
+      "program": "${workspaceFolder}/build/debug/src/simple_json", // 可执行文件路径//TODO
+      "args": [], // 命令行参数
+      "stopAtEntry": false, // 是否在程序入口处停止
+      "cwd": "${workspaceFolder}", // 工作目录
+      "environment": [], // 环境变量
+      "externalConsole": false, // 是否使用外部控制台
+      "MIMode": "gdb", // 调试器模式 (gdb 或 lldb)
+      "setupCommands": [
+        {
+          "description": "为 gdb 启用整齐打印",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        },
+        {
+          "description": "将反汇编风格设置为 ATT",
+          "text": "-gdb-set disassembly-flavor att",
+          "ignoreFailures": true
+        },
+        {
+          "description": "Set output radix to hexadecimal",
+          "text": "set output-radix 16",
+          "ignoreFailures": true
+        },
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "cmake: build", // 调试前执行的任务（需要配置 tasks.json）
+      "miDebuggerPath": "/usr/bin/gdb", // gdb 的路径（根据系统调整）
+      // 以下选项有助于处理标准库和模板的调试
+      "logging": {
+        "moduleLoad": false,
+        "engineLogging": true,
+        "trace": false
+      }
+    }
+  ]
+}

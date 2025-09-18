@@ -150,7 +150,6 @@ std::vector<u_int32_t> UTF8Adaptor::decode(std::string_view str)
 
 }
 /*
-
  std::tuple <size_t,u_int32_t> UTF8Adaptor::decode_one_char(std::string_view::const_iterator it) 
       {
         auto sum=[it](u_int32_t size){
@@ -183,7 +182,6 @@ std::vector<u_int32_t> UTF8Adaptor::decode(std::string_view str)
           std::cout<<"prefix_bits_count:"<<prefix_bits_count<<"result of sum :"<<std::bitset<32>(result)<<"\n";
 #endif
             return result>>(32-size*8);
-
         };
         u_char c=*it;
         if(c>=0b1111'0000)
@@ -200,48 +198,84 @@ std::vector<u_int32_t> UTF8Adaptor::decode(std::string_view str)
         }
         //ascii
         return {1,c};
-
     }
 */
+
  std::tuple <size_t,u_int32_t> UTF8Adaptor::decode_one_char(std::string_view::const_iterator it) 
       {
-        bool is_current_byte_start = true;
-        u_int32_t result=0x0;
         
+        u_int32_t result=0x0;
         auto get_single_utf8_char_size=[](auto iter)->size_t{
-        if(auto c=*iter;!c&0b1000'0000) 
+        if(auto c=*iter;!(c&0b1000'0000)) 
         {
             //ascii
             //TODO
+            return 1;
+
         }   
+        else if((c&0b1100'0000)==0b1000'0000)
+        {
+            //10xx'xxxx such format not allowed in a start byte for a utf-8 char!
+            throw std::invalid_argument("Invalid UTF-8 string");
+        }
+        else if((c&0b1110'0000)==0b1100'0000)
+        {
+            return 2;
+        }
+        else if((c&0b1111'0000)==0b1110'0000)
+        {
+            return 3;
+        }
+        else if((c&0b1111'1000)==0b1111'0000)
+        {
+            return 4;
+        }
         else
         {
-
+            throw std::invalid_argument("Invalid UTF-8 string");
         }
         };
-        auto get_first_byte_bits_piece_belonging_to_char=[](auto iter,size_t effective_bits_count)->unsigned char{
-
-        };
-        auto get_other_byte_bits_piece_belonging_to_char=[](auto iter)-> unsigned char
-        {
-
-        };
-
+        
         /*
         when start_of_valid_bitpiece=2,the byte is 0011 1110,then 11 1110 will be pasted.the 00 in the front are deprecated
                                                    --: 2 bits in total  
-        when start_of_integer_to_fill =24,result is 0x 1234 5678 9012 3456,from first bit of hex '3' of "3456" on,bits of result will be covered by bits from the byte  
-                                                       ---- ---- ---- : 24bits in total
+        when start_of_integer_to_fill =24,result is 0x 1234 5678 ,from first bit of hex '7' of "5678" on,bits of result will be covered by bits from the byte  
+                                                       ---- -- : 24bits in total
         */
         
         auto paste_bits_to_result=[&result](unsigned char byte,size_t start_of_valid_bitpiece,size_t start_of_integer_to_fill)
         {
-            decltype(result) expanded=byte;
+            decltype(result) expanded=(byte&(0b1111'1111>>start_of_valid_bitpiece));
             expanded<<=(24-start_of_integer_to_fill+start_of_valid_bitpiece);
             result|=expanded;
         };
         
+        if(auto size=get_single_utf8_char_size(it);size==1)
+        {
+            //ascii
+            return {1,result=*it};
+        }
+        else if(size==2)
+        {
+            paste_bits_to_result(*it,3,0);
+            paste_bits_to_result(*(it+1),2,5);
+            return {2,result>>21};
+        }
+        else if(size==3)
+        {
+            paste_bits_to_result(*it,4,0);
+            paste_bits_to_result(*(it+1),2,4);
+            paste_bits_to_result(*(it+2),2,10);
+            return {3,result>>16};
+        }
+        else if(size==4)
+        {
+            paste_bits_to_result(*it,5,0);
+            paste_bits_to_result(*(it+1),2,3);
+            paste_bits_to_result(*(it+2),2,9);
+            paste_bits_to_result(*(it+3),2,15);
+            return {4,result>>11};
 
-
-
+        }
+        throw std::invalid_argument("Invalid UTF-8 string");
     }
