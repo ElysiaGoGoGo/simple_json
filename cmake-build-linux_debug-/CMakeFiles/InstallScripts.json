@@ -1,9 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"/home/baka/\u6587\u6863/code/simple_json/cmake-build-linux_debug-/cmake_install.cmake",
-		"/home/baka/\u6587\u6863/code/simple_json/cmake-build-linux_debug-/src/cmake_install.cmake",
-		"/home/baka/\u6587\u6863/code/simple_json/cmake-build-linux_debug-/test/cmake_install.cmake"
-	],
-	"Parallel" : false
-}

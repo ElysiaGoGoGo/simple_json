@@ -1,1 +1,0 @@
-/usr/bin/c++ --coverage -g -Wl,--dependency-file=CMakeFiles/simple_json.dir/link.d CMakeFiles/simple_json.dir/json.cpp.o CMakeFiles/simple_json.dir/jsonobject.cpp.o CMakeFiles/simple_json.dir/jsonvalue.cpp.o CMakeFiles/simple_json.dir/main.cpp.o CMakeFiles/simple_json.dir/utf8handler.cpp.o -o simple_json
