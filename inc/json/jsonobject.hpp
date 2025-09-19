@@ -42,25 +42,20 @@ class JsonObjectBuilder;
  */
 using JsonObject = std::unordered_map<string, JsonValue>;
 /**
- * @brief Unicode字符类型定义
- * Unicode character type definition
+ * @brief Json字符串类型定义（已弃用，使用string代替）
+ * Json string type definition (deprecated, use string instead)
  */
-using UnicodeType = uint32_t;
+using JsonString = std::string;
 /**
- * @brief Unicode字符串类型定义
- * Unicode string type definition
+ * @brief Json字符串视图类型定义（已弃用，使用string_view代替）
+ * Json string view type definition (deprecated, use string_view instead)
  */
-using UnicodeString = std::vector<UnicodeType>;
+using JsonStringView = std::string_view;
 /**
- * @brief Unicode字符串视图类型定义
- * Unicode string view type definition
+ * @brief Json字符串视图迭代器类型定义（已弃用，使用string_view::const_iterator代替）
+ * Json string view iterator type definition (deprecated, use string_view::const_iterator instead)
  */
-using UnicodeStringView = std::span<const UnicodeType>;
-/**
- * @brief Unicode字符串视图迭代器类型定义
- * Unicode string view iterator type definition
- */
-using UnicodeStringViewIterator = UnicodeStringView::iterator;
+using JsonStringViewIterator = std::string_view::const_iterator;
 struct Accurate_Float : string
 {
 operator double()const
@@ -85,8 +80,8 @@ class JsonObjectBuilder
      */
     struct BuildCache
     {
-        UnicodeString json_file_str;
-        UnicodeStringView json_obj_str;
+        JsonString json_file_str;
+        JsonStringView json_obj_str;
         
         /**
          * @brief 期望特定字符，如果不是则抛出异常
@@ -94,7 +89,7 @@ class JsonObjectBuilder
          * @param it 迭代器引用 Iterator reference
          * @param c 期望的字符 Expected character
          */
-        void expect_char(UnicodeStringViewIterator &it, u_int32_t c) const;
+        void expect_char(JsonStringViewIterator &it, u_int32_t c) const;
         
         /**
          * @brief 期望逗号或右大括号
@@ -103,7 +98,7 @@ class JsonObjectBuilder
          * @param is_comma_expected 是否期望逗号 Whether comma is expected
          * @return 如果找到期望的字符返回true，否则false Returns true if expected character found, false otherwise
          */
-        bool expect_comma_or_right_brace(UnicodeStringViewIterator &it,bool is_comma_expected) const;
+        bool expect_comma_or_right_brace(JsonStringViewIterator &it,bool is_comma_expected) const;
         
         /**
          * @brief 获取键名
@@ -111,7 +106,7 @@ class JsonObjectBuilder
          * @param it 迭代器引用 Iterator reference
          * @return 键名字符串 Key name string
          */
-        string get_key(UnicodeStringViewIterator &it) const;
+        string get_key(JsonStringViewIterator &it) const;
         
         /**
          * @brief 解析JSON值
@@ -119,7 +114,7 @@ class JsonObjectBuilder
          * @param it 迭代器引用 Iterator reference
          * @return 解析后的JSON值 Parsed JSON value
          */
-        JsonValue parse_value(UnicodeStringViewIterator &it) const;
+        JsonValue parse_value(JsonStringViewIterator &it) const;
     };
     BuildCache build_cache;
     mutable std::optional<JsonObject> product_cache;
@@ -148,12 +143,12 @@ public:
     void build_from(std::filesystem::path const &path);
     
     /**
-     * @brief 从Unicode字符串视图构建JSON对象
-     * Build JSON object from Unicode string view
-     * @param json_str Unicode字符串视图 Unicode string view
+     * @brief 从Json字符串视图构建JSON对象
+     * Build JSON object from Json string view
+     * @param json_str Json字符串视图 Json string view
      */
-    void build_from(const UnicodeStringView json_str);
- static     void add(JsonObject & obj,UnicodeStringView json_str);
+    void build_from(const JsonStringView json_str);
+ static     void add(JsonObject & obj,JsonStringView json_str);
 
     /**
      * @brief 获取构建的产品（JSON对象）

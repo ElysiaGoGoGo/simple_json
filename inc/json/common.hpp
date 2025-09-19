@@ -5,9 +5,9 @@
 // Define DEBUG macro for debug output
 // Comment out or undef to disable debug output in release builds
 #define DEBUG
-
+#undef DEBUG
 #ifdef DEBUG
-inline void debug_print(UnicodeStringViewIterator iter)
+inline void debug_print(JsonStringViewIterator iter)
 {
     auto forward=iter,backward=iter;
     while(*forward!='\n')
@@ -47,7 +47,7 @@ inline void debug_print(UnicodeStringViewIterator iter)
  * @param c 要检查的字符 The character to check
  * @return 如果是结束字符返回true，否则返回false Returns true if it's an end character, false otherwise
  */
-inline bool is_end_char(u_int32_t c) {return c==',' || c=='}' || c==']' ;}
+inline bool is_end_char(char c) {return c==',' || c=='}' || c==']' ;}
 
 /**
  * @brief 检查字符是否为空白字符
@@ -55,7 +55,7 @@ inline bool is_end_char(u_int32_t c) {return c==',' || c=='}' || c==']' ;}
  * @param c 要检查的字符 The character to check
  * @return 如果是空白字符返回true，否则返回false Returns true if it's a whitespace character, false otherwise
  */
-inline bool is_whitespace(u_int32_t c) {return c==' ' || c=='\t' || c=='\n' || c=='\r';}
+inline bool is_whitespace(char c) {return c==' ' || c=='\t' || c=='\n' || c=='\r';}
 
 using std::string;
 
@@ -73,23 +73,7 @@ class FileGuard
  * @brief 循环保护类，防止无限循环
  * Loop guard class to prevent infinite loops
  */
-class LoopGuard
-{
-    int counter=0;
-    constexpr static int max_counter=10000;
-public:
-    /**
-     * @brief 调用操作符，增加计数器并检查是否超过最大限制
-     * Call operator, increments counter and checks if exceeds maximum limit
-     */
-    void operator()(){
-        ++counter;
-        if(counter>max_counter)
-        {
-            throw std::runtime_error("LoopGuard: too many loops");
-        }
-    }
-};
+
 
 /**
  * @brief 行错误类，提供详细的错误信息和上下文
@@ -97,7 +81,7 @@ public:
  */
 class LineError: std::runtime_error
 {
-    UnicodeStringViewIterator iter;
+    JsonStringViewIterator iter;
     string msg;
 public:
     /**
@@ -116,7 +100,7 @@ public:
      * @param ms 错误消息 Error message
      * @param iter 字符串迭代器位置 String iterator position
      */
-    LineError(const std::string& ms,UnicodeStringViewIterator iter):std::runtime_error(ms),iter(iter),msg(ms){
+    LineError(const std::string& ms,JsonStringViewIterator iter):std::runtime_error(ms),iter(iter),msg(ms){
 
 
     }

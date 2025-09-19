@@ -18,7 +18,6 @@ using std::string;
 using std::variant;
 using std::vector;
 using std::tuple;
-#include "utf8handler.hpp"
 #include "algorithm"
 #include "jsonobject.hpp"
 
@@ -55,7 +54,7 @@ struct JsonValue : variant<string, bool, Accurate_Float, int, JsonArray, JsonObj
      */
     class JsonValueBuilder
     {
-        UnicodeStringView view_to_build_from;
+        JsonStringView view_to_build_from;
         
         /**
          * @brief 获取值的类型
@@ -70,60 +69,61 @@ struct JsonValue : variant<string, bool, Accurate_Float, int, JsonArray, JsonObj
          */
         void skip_whitespace()
         {
-            for(auto iter=this->view_to_build_from.begin();iter!=this->view_to_build_from.end();++iter)
+            size_t pos = 0;
+            for (; pos < view_to_build_from.size(); ++pos)
             {
-                if(!is_whitespace(*iter))
+                if (!is_whitespace(view_to_build_from[pos]))
                 {
-                    this->view_to_build_from=this->view_to_build_from.subspan(iter-this->view_to_build_from.begin());
                     break;
                 }
             }
+            view_to_build_from = view_to_build_from.substr(pos);
         }
         
         /**
          * @brief 获取值的范围
          * Get the range of value
          * @param type 值类型 Value type
-         * @return Unicode字符串视图 Unicode string view
+         * @return Json字符串视图 Json string view
          */
-        UnicodeStringView get_Value_range(Type type);
+        JsonStringView get_Value_range(Type type);
         
         /**
          * @brief 期望右大括号或右中括号（带嵌入条件）
          * Expect right brace or right bracket with embedded condition
          * @param is_right_brace_expected 是否期望右大括号 Whether right brace is expected
-         * @return Unicode字符串视图迭代器 Unicode string view iterator
+         * @return Json字符串视图迭代器 Json string view iterator
          */
-        UnicodeStringViewIterator expect_right_brace_or_right_bracket_with_embedded_condition(bool is_right_brace_expected);
+        JsonStringViewIterator expect_right_brace_or_right_bracket_with_embedded_condition(bool is_right_brace_expected);
         
         /**
          * @brief 获取字符串值和结束迭代器
          * Get string value and end iterator
          * @return 包含字符串和迭代器的元组 Tuple containing string and iterator
          */
-        tuple<string, UnicodeStringViewIterator> get_string_value_and_end() const;
+        tuple<string, JsonStringViewIterator> get_string_value_and_end() const;
 
     public:
         /**
          * @brief 构造函数
          * Constructor
-         * @param str Unicode字符串视图 Unicode string view
+         * @param str Json字符串视图 Json string view
          */
-        explicit JsonValueBuilder(const UnicodeStringView str) : view_to_build_from(str) {}
+        explicit JsonValueBuilder(const JsonStringView str) : view_to_build_from(str) {}
         
         /**
          * @brief 构建JSON值
          * Build JSON value
          * @return 包含JSON值和迭代器的元组 Tuple containing JSON value and iterator
          */
-        std::tuple<JsonValue, UnicodeStringViewIterator> build();
+        std::tuple<JsonValue, JsonStringViewIterator> build();
     };
     
     JsonValue &operator=(JsonValue &&) = default;
     JsonValue(const JsonValue &) = default;
     JsonValue(JsonValue &&) = default;
     JsonValue &operator=(const JsonValue &) = default;
-    string to_string() const;
+    string to_string(bool fill_whitespaces = false) const;
     /**
      * @brief 获取JSON值的类型
      * Get the type of JSON value

@@ -31,9 +31,11 @@ void simple_json::dump(JsonObject const &obj, std::filesystem::path const &path)
   file << obj;
   file.close();
 }
-string simple_json:: walk_through(JsonObject const& obj)
+    string simple_json:: walk_through(JsonObject const& obj,bool fill_whitespaces)
 {
-  string result="{";
+  if(fill_whitespaces)
+  {
+string result="{";
   bool is_first_pair=true;
   for ( const auto & [key, value] : obj)
   {
@@ -44,21 +46,49 @@ string simple_json:: walk_through(JsonObject const& obj)
     else
     {
       result.push_back(',');
+      
+        result.push_back('\n');
+      
     }
-    result+= (key+":"+value.to_string())  ;
+    result+= (key+":"+value.to_string(true))  ;
+    
   }
   result.push_back('}');
 return  result;
+  }
+  else
+  {
+    string result="{\n";
+  bool is_first_pair=true;
+  for ( const auto & [key, value] : obj)
+  {
+    if ( is_first_pair )
+    {
+      is_first_pair=false;
+    }
+    else
+    {
+      result.push_back(',');
+      
+      
+    }
+    result+= (key+":"+value.to_string())  ;
+    
+  }
+  result.push_back('\n');
+  result.push_back('}');
+return  result;
+  }
+  
 }
 ostream& operator<<(ostream& os, const JsonObject& obj)
 {
-os<<simple_json:: walk_through(obj);
+os<<simple_json:: walk_through(obj,true);
   return os;
 }
 ifstream& operator>>(ifstream& is, JsonObject& obj)
 {
   const std::string buffer{std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>()};
-  UnicodeString decode_str=UTF8Adaptor::decode(buffer);
-  JsonObjectBuilder ::add(obj,decode_str);
+  JsonObjectBuilder::add(obj, buffer);
   return is;
 }

@@ -130,7 +130,7 @@ return encode(std::span<const u_int32_t>(vec));
             }
             else
             {
-                throw std::invalid_argument("Invalid unicode point!");
+                throw std::invalid_argument("Invalid Json point!");
             }
         }
         return utf8_str;

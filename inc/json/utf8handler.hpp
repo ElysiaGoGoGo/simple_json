@@ -22,7 +22,7 @@ protected:
      * @brief 解码单个UTF-8字符（迭代器版本）
      * Decode single UTF-8 character (iterator version)
      * @param it 字符串迭代器 String iterator
-     * @return 包含字符长度和Unicode码点的元组 Tuple containing character length and Unicode code point
+     * @return 包含字符长度和Json码点的元组 Tuple containing character length and Json code point
      */
     static std::tuple <size_t,u_int32_t> decode_one_char(std::string_view::const_iterator it) ;
     
@@ -31,7 +31,7 @@ protected:
      * Decode single UTF-8 character (string and position version)
      * @param str 字符串视图 String view
      * @param pos 字符位置 Character position
-     * @return 包含字符长度和Unicode码点的元组 Tuple containing character length and Unicode code point
+     * @return 包含字符长度和Json码点的元组 Tuple containing character length and Json code point
      */
     static std::tuple <size_t,u_int32_t> decode_one_char(std::string_view str, size_t pos) 
     {
@@ -47,19 +47,19 @@ public:
     static bool IsValidUTF8(std::string_view str);
     
     /**
-     * @brief 将Unicode码点向量编码为UTF-8字符串
-     * Encode Unicode code points vector to UTF-8 string
-     * @param vec Unicode码点向量 Unicode code points vector
+     * @brief 将Json码点向量编码为UTF-8字符串
+     * Encode Json code points vector to UTF-8 string
+     * @param vec Json码点向量 Json code points vector
      * @return 编码后的UTF-8字符串 Encoded UTF-8 string
      */
     static std::string encode(const std::vector<u_int32_t> & vec);
     static std::string encode(std::span<const u_int32_t> vec);
     
     /**
-     * @brief 将UTF-8字符串解码为Unicode码点向量
-     * Decode UTF-8 string to Unicode code points vector
+     * @brief 将UTF-8字符串解码为Json码点向量
+     * Decode UTF-8 string to Json code points vector
      * @param str UTF-8字符串 UTF-8 string
-     * @return 解码后的Unicode码点向量 Decoded Unicode code points vector
+     * @return 解码后的Json码点向量 Decoded Json code points vector
      */
     static std::vector<u_int32_t> decode(std::string_view str);
 
