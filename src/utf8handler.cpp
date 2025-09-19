@@ -209,7 +209,6 @@ std::vector<u_int32_t> UTF8Adaptor::decode(std::string_view str)
         if(auto c=*iter;!(c&0b1000'0000)) 
         {
             //ascii
-            //TODO
             return 1;
 
         }   
@@ -250,7 +249,7 @@ std::vector<u_int32_t> UTF8Adaptor::decode(std::string_view str)
             result|=expanded;
         };
         
-        if(auto size=get_single_utf8_char_size(it);size==1)
+        if(const auto size=get_single_utf8_char_size(it);size==1)
         {
             //ascii
             return {1,result=*it};
@@ -277,5 +276,11 @@ std::vector<u_int32_t> UTF8Adaptor::decode(std::string_view str)
             return {4,result>>11};
 
         }
-        throw std::invalid_argument("Invalid UTF-8 string");
-    }
+        else
+        {
+            throw std::invalid_argument("Invalid UTF-8 string");
+
+        }
+
+
+         }

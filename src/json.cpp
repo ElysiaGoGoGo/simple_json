@@ -27,10 +27,9 @@ JsonObject simple_json::parse(std::filesystem::path const &path)
  */
 void simple_json::dump(JsonObject const &obj, std::filesystem::path const &path)
 {
-  // TODO: 实现JSON对象转储功能 Implement JSON object dump functionality
   std::ofstream file(path);
   file << obj;
-
+  file.close();
 }
 string simple_json:: walk_through(JsonObject const& obj)
 {

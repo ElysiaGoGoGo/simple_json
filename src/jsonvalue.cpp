@@ -49,8 +49,9 @@ tuple<string,UnicodeStringViewIterator> JsonValue::JsonValueBuilder::get_string_
     }
     throw LineError("Unexpected end of file", this->view_to_build_from.begin());
 }
-JsonValue::Type JsonValue::JsonValueBuilder:: getType()const
+JsonValue::Type JsonValue::JsonValueBuilder:: getType()const 
 {
+    //the type returned  
     auto it = this->view_to_build_from.begin();
     while (it!= this->view_to_build_from.end())
     {
@@ -76,32 +77,12 @@ JsonValue::Type JsonValue::JsonValueBuilder:: getType()const
             throw LineError("Unexpected whitespace when parsing JSON value type", this->view_to_build_from.begin());
         default:
         {
-            //([+-]?\d+)(\.\d+)?(e[+-]?\d+)?
-            enum class State
-            {
-                Num_Sign,
-                Num_Before_Dot,
-                Dot,
-                Num_After_Dot,
-                E_Of_Scientific_Notation,
-                Sign_After_E,
-                Num_After_E,
-                Non_Part_Of_Num
-
-            };
-            State state = State::Num_Sign;
-            while(it!= this->view_to_build_from.end())
-            {
-                switch (state)
-                {
-
-                    //TODO
-                }
-            }
-
-
-
+            //([+-]?\d+)(\.\d+)?(e[+-]?\d+)?    
+            auto regex_str = R"(([-+]?\d+(\.\d+)?(e[+-]?\d+)?))";
+            auto end=it;
+            
         }
+
     }
 
         ++it;
@@ -111,7 +92,7 @@ JsonValue::Type JsonValue::JsonValueBuilder:: getType()const
 }
 
 UnicodeStringView JsonValue::JsonValueBuilder:: get_Value_range(Type type)
-{//TODO
+{
     switch (type)
     {
     case Type::Array:
@@ -130,7 +111,7 @@ UnicodeStringView JsonValue::JsonValueBuilder:: get_Value_range(Type type)
 }
 
   std::tuple<JsonValue,UnicodeStringViewIterator> JsonValue::JsonValueBuilder:: build()//返回的iter指向被解析的值的下一个字符
-  {//TODO
+  {
     skip_whitespace();
     auto type = getType();
 #ifdef DEBUG
