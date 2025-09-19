@@ -3,37 +3,39 @@
   "configurePresets": [
     {
       "name": "win_debug",
-      "inherits": ["debug","vs2022"],
+      "inherits": [
+        "debug",
+        "vs2022"
+      ],
       "environment": {
         "VCPKG_ROOT": "C:\\environment\\VCPKG\\vcpkg"
       }
     },
     {
       "name": "linux_debug",
-      "inherits": ["debug","make"],
-      "environment": {
-        
-      }
+      "inherits": [
+        "debug",
+        "make"
+      ],
+      "environment": {}
     },
     {
       "name": "linux_release",
-      "inherits": ["release","make"],
-      "environment": {
-        
-      }
+      "inherits": [
+        "release",
+        "make"
+      ],
+      "environment": {}
     }
   ],
   "buildPresets": [
-
     {
       "name": "win_debug",
       "configurePreset": "win_debug"
-
-    } ,
+    },
     {
       "name": "linux_debug",
       "configurePreset": "linux_debug"
-      
     },
     {
       "name": "linux_release",

@@ -198,7 +198,7 @@ break;
 throw std::logic_error("never reach here");
   }
 
-string JsonValue::to_string(bool fill_whitespaces ) const
+string JsonValue::to_string(bool fill_whitespaces,size_t indent_count,bool is_colon_before) const
 {
     string result;
 
@@ -225,6 +225,7 @@ string JsonValue::to_string(bool fill_whitespaces ) const
         }
         else if constexpr (std::is_same_v<T, JsonArray>)
         {
+          
             result.push_back('[');
             result.push_back('\n');
             bool first=true;
@@ -238,14 +239,15 @@ string JsonValue::to_string(bool fill_whitespaces ) const
                 {
                     result += ",\n";
                 }
-               result+= v.to_string(true);
+               result+=     string(indent_count*indent_size,' ')+ v.to_string(true,indent_count,false);
             }
             result.push_back('\n');
+            result+=string(indent_count*indent_size,' ');
             result.push_back(']');
         }
         else if constexpr (std::is_same_v<T, JsonObject>)
         {
-            result= simple_json::walk_through(arg,true);
+            result= simple_json::walk_through(arg,true,indent_count+1,is_colon_before);
         }
         else
         {

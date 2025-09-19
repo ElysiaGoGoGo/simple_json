@@ -40,7 +40,7 @@ inline void debug_print(JsonStringViewIterator iter)
 #include <span>
 #include <iostream>
 #include <simple_json.hpp>
-
+constexpr static size_t indent_size = 4;
 /**
  * @brief 检查字符是否为JSON结束字符
  * Check if character is a JSON end character

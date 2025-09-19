@@ -21,7 +21,7 @@ JsonObject parse(std::filesystem::path const& path);
  * @param path 文件路径 File path
  */
 void dump(JsonObject const& obj, std::filesystem::path const& path);
-    string walk_through(JsonObject const& obj,bool fill_whitespaces=false);
+    string walk_through(JsonObject const& obj,bool fill_whitespaces=false,size_t indent_count=0,bool is_colon_before=false);
 
 
 

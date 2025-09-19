@@ -112,7 +112,7 @@ struct JsonValue : variant<string, bool, Accurate_Float, int, JsonArray, JsonObj
     JsonValue(const JsonValue &) = default;
     JsonValue(JsonValue &&) = default;
     JsonValue &operator=(const JsonValue &) = default;
-    string to_string(bool fill_whitespaces = false) const;
+    string to_string(bool fill_whitespaces = false,size_t indent_count=0,bool is_colon_before=false)const;
     /**
      * @brief 获取JSON值的类型
      * Get the type of JSON value
