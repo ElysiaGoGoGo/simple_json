@@ -67,18 +67,7 @@ struct JsonValue : variant<string, bool, Accurate_Float, int, JsonArray, JsonObj
          * @brief 跳过空白字符
          * Skip whitespace characters
          */
-        void skip_whitespace()
-        {
-            size_t pos = 0;
-            for (; pos < view_to_build_from.size(); ++pos)
-            {
-                if (!is_whitespace(view_to_build_from[pos]))
-                {
-                    break;
-                }
-            }
-            view_to_build_from = view_to_build_from.substr(pos);
-        }
+       
         
         /**
          * @brief 获取值的范围

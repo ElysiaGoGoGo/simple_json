@@ -50,7 +50,7 @@ string result="{";
         result.push_back('\n');
       
     }
-    result+= (key+":"+value.to_string(true))  ;
+    result+= (key+" : "+value.to_string(true))  ;
     
   }
   result.push_back('}');

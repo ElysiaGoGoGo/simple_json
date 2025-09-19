@@ -52,11 +52,7 @@ tuple<string,JsonStringViewIterator> JsonValue::JsonValueBuilder::get_string_val
 JsonValue::Type JsonValue::JsonValueBuilder:: getType()const 
 {
     //the type returned  
-    auto it = this->view_to_build_from.begin();
-    while (it!= this->view_to_build_from.end())
-    {
-
-        switch (*it)
+switch (*view_to_build_from.begin())
         {
         case '"':
             return Type::String;
@@ -70,24 +66,13 @@ JsonValue::Type JsonValue::JsonValueBuilder:: getType()const
             return Type::Boolean;
         case 'n':
             return Type::Null;
-        case ' ':
-        case '\n':
-        case '\t':
-        case '\r':
-            throw LineError("Unexpected whitespace when parsing JSON value type", this->view_to_build_from.begin());
         default:
         {
             //([+-]?\d+)(\.\d+)?(e[+-]?\d+)?    
             return Type::Float;//TODO fix it
         }
-
     }
-
-        ++it;
     }
-    
-    throw std::runtime_error("u should not reach here");
-}
 
 JsonStringView JsonValue::JsonValueBuilder:: get_Value_range(Type type)
 {
@@ -110,7 +95,7 @@ JsonStringView JsonValue::JsonValueBuilder:: get_Value_range(Type type)
 
   std::tuple<JsonValue,JsonStringViewIterator> JsonValue::JsonValueBuilder:: build()//返回的iter指向被解析的值的下一个字符
   {
-    skip_whitespace();
+
     auto type = getType();
 #ifdef DEBUG
    std::cout<<" \n\nview_to_build_from:" <<string (view_to_build_from.begin(),view_to_build_from.end())<<std::endl;
@@ -123,41 +108,27 @@ JsonStringView JsonValue::JsonValueBuilder:: get_Value_range(Type type)
         JsonArray array;
         array.reserve(std::count(value_range.begin(),value_range.end(),','));
         JsonValueBuilder builder(value_range.substr(1, value_range.size()-2));
-        auto skip_comma =[](JsonStringViewIterator & iter)->bool{
-         
-            while(true)
-            {
-          
-                if(auto c=*iter;c==',')
-                {
-                    ++iter;
-                    return true;
-                }
-                else if(c==']')
-                {
-                    ++iter;
-                    return false;
-                }
-                else if(!is_whitespace(c))
-                {
-                        throw LineError("Expecting ',' or ']' or any whitespace character", iter);
-                }
-                ++iter;
-                }
-            
 
-        };
-      
         while(true)
     {
  
  auto [value,iter]=    builder.build();
         array.emplace_back(std::move(value));
-      if(!skip_comma(iter))
-      {
-        break;
-      }
-      builder.view_to_build_from = builder.view_to_build_from.substr(iter - builder.view_to_build_from.begin());
+ if(auto c=*iter;c==',')
+ {
+ ++iter;
+ }
+ else if(c==']')
+ {
+  
+break;
+ }
+ else
+ {
+    throw LineError("error when parsing JSON value type",this->view_to_build_from.begin());
+ }
+    
+      builder.view_to_build_from.remove_prefix(iter - builder.view_to_build_from.begin());
 }
 
 
@@ -344,7 +315,7 @@ string JsonValue::to_string(bool fill_whitespaces ) const
 
 JsonStringViewIterator JsonValue::JsonValueBuilder:: expect_right_brace_or_right_bracket_with_embedded_condition( bool is_right_brace_expected)
 {
-    u_int32_t l= is_right_brace_expected?'{':'[',r= is_right_brace_expected?'}':']';
+    char l= is_right_brace_expected?'{':'[',r= is_right_brace_expected?'}':']';
 
     bool is_current_char_escaped = false;
     bool is_in_string = false;

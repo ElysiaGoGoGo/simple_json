@@ -89,17 +89,9 @@ class JsonObjectBuilder
          * @param it 迭代器引用 Iterator reference
          * @param c 期望的字符 Expected character
          */
-        void expect_char(JsonStringViewIterator &it, u_int32_t c) const;
+        void expect_char(JsonStringViewIterator &it, char c) const;
         
-        /**
-         * @brief 期望逗号或右大括号
-         * Expect comma or right brace
-         * @param it 迭代器引用 Iterator reference
-         * @param is_comma_expected 是否期望逗号 Whether comma is expected
-         * @return 如果找到期望的字符返回true，否则false Returns true if expected character found, false otherwise
-         */
-        bool expect_comma_or_right_brace(JsonStringViewIterator &it,bool is_comma_expected) const;
-        
+   
         /**
          * @brief 获取键名
          * Get key name

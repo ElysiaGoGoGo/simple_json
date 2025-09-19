@@ -61,15 +61,12 @@ void JsonObjectBuilder::build_from(std::filesystem::path const &path)
     {
         throw std::invalid_argument("Invalid file path");
     }
-    size_t filesize = std::filesystem::file_size(path);
+    
     std::string buffer;
 read_json_without_external_whitespaces(buffer,file);
 
     file.close();
-    if (buffer.size() != filesize)
-    {
-        throw std::runtime_error("File size mismatch");
-    }
+
     build_cache.json_file_str = buffer;
     build_cache.json_obj_str = JsonStringView(build_cache.json_file_str);
 
@@ -167,18 +164,19 @@ void JsonObjectBuilder::build_with_cache() const
         }
         case IterStatus::EXPECT_COMMA_OR_RIGHT_BRACE:
         {
-            if (build_cache.expect_comma_or_right_brace(iter, true))
+            if(auto c=*iter;c==',')
             {
-                status = IterStatus::EXPECT_KEY;
+                status=IterStatus::EXPECT_KEY;
             }
-            else if (build_cache.expect_comma_or_right_brace(iter, false))
+            else if(c=='}')
             {
-                status = IterStatus::READY_TO_EXIT;
+                status=IterStatus::READY_TO_EXIT;
             }
             else
             {
                 throw LineError("Expecting ',' or '}'", iter);
             }
+            ++iter;
             break;
         }
         case IterStatus::READY_TO_EXIT:
@@ -197,7 +195,7 @@ OUT_OF_LOOP:
 #pragma endregion
 
 #pragma region BuildCache Methods
-void JsonObjectBuilder::BuildCache::expect_char(JsonStringViewIterator &it, u_int32_t c) const
+void JsonObjectBuilder::BuildCache::expect_char(JsonStringViewIterator &it, char c) const
 {
 if(*it==c)
 {
@@ -208,26 +206,7 @@ else
     throw LineError("Expecting '"+std::string(1,c)+"'", it);
 }
 }
-bool JsonObjectBuilder::BuildCache::expect_comma_or_right_brace(JsonStringViewIterator &it, bool is_comma_expected) const
-{
-    u_int32_t c = is_comma_expected ? ',' : '}';
-    auto iter = it;
-    while (iter != this->json_obj_str.end())
-    {
-        if (!is_whitespace(*iter))
-        {
-            if (*iter == c)
-            {
-                ++iter;
-                it = iter;
-                return true;
-            }
-            return false;
-        }
-        ++iter;
-    }
-    return false;
-}
+
 
 string JsonObjectBuilder::BuildCache::get_key(JsonStringViewIterator &it) const
 {
@@ -240,8 +219,9 @@ string JsonObjectBuilder::BuildCache::get_key(JsonStringViewIterator &it) const
             start = it + 1;
             ++it;
         }
-            throw LineError("Expecting '\"' or any whitespace character", it);
-        
+        else
+{            throw LineError("Expecting '\"' or any whitespace character", it);
+}        
     while (it != this->json_obj_str.end())
     {
         if (is_current_char_escaped)

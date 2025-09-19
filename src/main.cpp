@@ -16,9 +16,9 @@ int main() {
   #endif
 
     auto & cp =std::get<JsonArray>(obj["configurePresets"]);
-    const auto & name = std::get<JsonObject>(cp[0])["cacheVairiables"].to_string();
-
-   std::cout<<"name:\n"<< name<<"\nobj1: \n"<<obj<<std::endl;
+  auto & a=cp[0];
+   std::cout<<"name:\n"<<"\nobj1: \n"<<obj<<"\nobj2: \n"<<cp[0].to_string(true)<<std::endl;
+   simple_json::dump(obj,"/home/baka/文档/code/simple_json/CMakePresetttest.json") ;
 
 return 0;
 }
