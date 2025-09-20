@@ -204,6 +204,7 @@ string JsonValue::to_string(bool fill_whitespaces,size_t indent_count,bool is_co
 
     if(fill_whitespaces)
     {
+        
     std::visit([&](auto && arg)
     {
         using T = std::decay_t<decltype(arg)>;
@@ -225,7 +226,12 @@ string JsonValue::to_string(bool fill_whitespaces,size_t indent_count,bool is_co
         }
         else if constexpr (std::is_same_v<T, JsonArray>)
         {
-          
+            if(arg.empty())
+            {
+                result="[]";
+                return ;
+            }
+
             result.push_back('[');
             result.push_back('\n');
             bool first=true;
@@ -237,24 +243,33 @@ string JsonValue::to_string(bool fill_whitespaces,size_t indent_count,bool is_co
                 }
                 else
                 {
-                    result += ",\n";
+                    result += ',';
+                    result.push_back('\n');
                 }
-               result+=     string(indent_count*indent_size,' ')+ v.to_string(true,indent_count,false);
+                if(!(v.getType()==JsonValue::Type::Object||v.getType()==JsonValue::Type::Array))
+                {
+                    result+=indent(indent_count+1);
+                }
+               result+= v.to_string(true,indent_count+1,false);
             }
             result.push_back('\n');
-            result+=string(indent_count*indent_size,' ');
+            result+=indent(indent_count);
             result.push_back(']');
         }
         else if constexpr (std::is_same_v<T, JsonObject>)
         {
-            result= simple_json::walk_through(arg,true,indent_count+1,is_colon_before);
+            if(arg.empty())
+            {
+                result = "{}";
+                return ;
+            }
+            result= simple_json::walk_through(arg,true,indent_count,is_colon_before);
         }
         else
         {
             result="null";
         }
     },*(static_cast<const JsonRawValueType  *>(this)));
-
 
     }
 

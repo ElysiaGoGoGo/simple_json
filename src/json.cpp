@@ -16,7 +16,8 @@
 JsonObject simple_json::parse(std::filesystem::path const &path)
 {
 
-  return [&path] -> JsonObject{    JsonObjectBuilder builder;builder.build_from(path);return builder.get_product().value();  }();
+  return [&path] -> JsonObject
+  {    JsonObjectBuilder builder;builder.build_from(path);return builder.get_product().value(); }();
 }
 
 /**
@@ -31,84 +32,90 @@ void simple_json::dump(JsonObject const &obj, std::filesystem::path const &path)
   file << obj;
   file.close();
 }
-    string simple_json:: walk_through(JsonObject const& obj,bool fill_whitespaces,size_t indent_count,bool is_colon_before)
+
+string simple_json::walk_through(JsonObject const &obj, bool fill_whitespaces, size_t indent_count, bool is_colon_before)
 {
-  if(fill_whitespaces)
+  if (fill_whitespaces)
   {
 
-    if(obj.empty())
+    if (obj.empty())
     {
       return "{}";
     }
     string result;
-    
-    if(!is_colon_before)
+    if (is_colon_before)
     {
-      result+=(string(indent_count*indent_size,' '));
+      result+="{\n";
+    bool is_first_pair = true;
+    for (const auto &[key, value] : obj)
+    {
+      if (is_first_pair)
+      {
+        is_first_pair = false;
+      }
+      else
+      {
+        result.push_back(',');
+        result.push_back('\n');
+      }
+      result += ( indent(indent_count+1)+   "\"" + key + "\": " + value.to_string(true, indent_count+1,is_colon_before));
     }
-    result+="{\n";
-    
-  bool is_first_pair=true;
-  for ( const auto & [key, value] : obj)
-  {
-    if ( is_first_pair )
-    {
-      is_first_pair=false;
+    result.push_back('\n');
+    result+=indent(indent_count);
+    result.push_back('}');
+
     }
     else
     {
-      result.push_back(',');
-      result.push_back('\n');      
+      result += indent(indent_count) + "{\n";
+      bool is_first_pair = true;
+      for (const auto &[key, value] : obj)
+      {
+        if (is_first_pair)
+        {
+          is_first_pair = false;
+        }
+        else
+        {
+          result.push_back(',');
+          result.push_back('\n');
+        }
+        result += (indent(indent_count+1)+"\"" + key + "\": " + value.to_string(true, indent_count+1,true));
+      }
+          result.push_back('\n');
+      result+=indent(indent_count)+"}";
+
+
     }
-    result+= ( string(    (is_colon_before?indent_count:(indent_count+1))*indent_size,' ')+ "\""+key+"\": "+value.to_string(true,(indent_count+1),true))  ;
-    
-  }
-  if(!obj.empty())
-{  result.push_back('\n');
-}
-if(is_colon_before)
-{
-result+=string((indent_count-1)*indent_size,' ');
 
-
-
-}
-else
-{
-  result+=string(indent_count*indent_size,' ');
-
-}
-  result.push_back('}');
-return  result;
+    return result;
   }
   else
   {
-string result="{";
-  bool is_first_pair=true;
-  for ( const auto & [key, value] : obj)
-  {
-    if ( is_first_pair )
+    string result = "{";
+    bool is_first_pair = true;
+    for (const auto &[key, value] : obj)
     {
-      is_first_pair=false;
+      if (is_first_pair)
+      {
+        is_first_pair = false;
+      }
+      else
+      {
+        result.push_back(',');
+      }
+      result += ("\"" + key + "\":" + value.to_string());
     }
-    else
-    {
-      result.push_back(','); 
-    }
-    result+= ("\""+key+"\":"+value.to_string())  ;
-    
+    result.push_back('}');
+    return result;
   }
-  result.push_back('}');
-return  result;
-  }
-  
 }
-ostream& operator<<(ostream& os, const JsonObject& obj)
+ostream &operator<<(ostream &os, const JsonObject &obj)
 {
-os<<simple_json:: walk_through(obj,true,0,false);
+  os << simple_json::walk_through(obj, true, 0, false);
   return os;
 }
-ifstream& operator>>(ifstream& is, JsonObject& obj)
+ifstream &operator>>(ifstream &is, JsonObject &obj)
 {
   const std::string buffer{std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>()};
   JsonObjectBuilder::add(obj, buffer);
