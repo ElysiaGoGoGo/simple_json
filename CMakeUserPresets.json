@@ -2,44 +2,230 @@
   "version": 3,
   "configurePresets": [
     {
-      "name": "win_debug",
+      "name": "default",
+      "inherits":["win_vs2022_debug"]
+    },
+    {
+      "name": "win_vs2022_debug",
       "inherits": [
-        "debug",
+        "debug-msvc",
         "vs2022"
       ],
+      "binaryDir": "${sourceDir}/build/win/vs2022/debug",
       "environment": {
         "VCPKG_ROOT": "C:\\environment\\VCPKG\\vcpkg"
       }
     },
     {
-      "name": "linux_debug",
+      "name": "win_vs2022_release",
+      "inherits": [
+        "release-msvc",
+        "vs2022"
+      ],
+      "binaryDir": "${sourceDir}/build/win/vs2022/release",
+      "environment": {
+        "VCPKG_ROOT": "C:\\environment\\VCPKG\\vcpkg"
+      }
+    },
+    {
+      "name": "win_mingw_debug",
+      "inherits": [
+        "debug",
+        "mingw"
+      ],
+      "binaryDir": "${sourceDir}/build/win/mingw/debug",
+      "environment": {}
+    },
+    {
+      "name": "win_mingw_release",
+      "inherits": [
+        "release",
+        "mingw"
+      ],
+      "binaryDir": "${sourceDir}/build/win/mingw/release",
+      "environment": {}
+    },
+    {
+      "name": "win_ninja_debug",
+      "inherits": [
+        "debug",
+        "ninja"
+      ],
+      "binaryDir": "${sourceDir}/build/win/ninja/debug",
+      "environment": {}
+    },
+    {
+      "name": "win_ninja_release",
+      "inherits": [
+        "release",
+        "ninja"
+      ],
+      "binaryDir": "${sourceDir}/build/win/ninja/release",
+      "environment": {}
+    },
+    {
+      "name": "linux_make_debug",
       "inherits": [
         "debug",
         "make"
       ],
+      "binaryDir": "${sourceDir}/build/linux/make/debug",
       "environment": {}
     },
     {
-      "name": "linux_release",
+      "name": "linux_make_release",
       "inherits": [
         "release",
         "make"
       ],
+      "binaryDir": "${sourceDir}/build/linux/make/release",
+      "environment": {}
+    },
+    {
+      "name": "linux_ninja_debug",
+      "inherits": [
+        "debug",
+        "ninja"
+      ],
+      "binaryDir": "${sourceDir}/build/linux/ninja/debug",
+      "environment": {}
+    },
+    {
+      "name": "linux_ninja_release",
+      "inherits": [
+        "release",
+        "ninja"
+      ],
+      "binaryDir": "${sourceDir}/build/linux/ninja/release",
+      "environment": {}
+    },
+    {
+      "name": "win_msbuild_debug",
+      "inherits": [
+        "debug",
+        "msbuild"
+      ],
+      "binaryDir": "${sourceDir}/build/win/msbuild/debug",
+      "environment": {
+        "VCPKG_ROOT": "C:\\environment\\VCPKG\\vcpkg"
+      }
+    },
+    {
+      "name": "win_msbuild_release",
+      "inherits": [
+        "release",
+        "msbuild"
+      ],
+      "binaryDir": "${sourceDir}/build/win/msbuild/release",
+      "environment": {
+        "VCPKG_ROOT": "C:\\environment\\VCPKG\\vcpkg"
+      }
+    },
+    {
+      "name": "win_nmake_debug",
+      "inherits": [
+        "debug",
+        "nmake"
+      ],
+      "binaryDir": "${sourceDir}/build/win/nmake/debug",
+      "environment": {}
+    },
+    {
+      "name": "win_nmake_release",
+      "inherits": [
+        "release",
+        "nmake"
+      ],
+      "binaryDir": "${sourceDir}/build/win/nmake/release",
+      "environment": {}
+    },
+    {
+      "name": "mac_xcode_debug",
+      "inherits": [
+        "debug",
+        "xcode"
+      ],
+      "binaryDir": "${sourceDir}/build/mac/xcode/debug",
+      "environment": {}
+    },
+    {
+      "name": "mac_xcode_release",
+      "inherits": [
+        "release",
+        "xcode"
+      ],
+      "binaryDir": "${sourceDir}/build/mac/xcode/release",
       "environment": {}
     }
   ],
   "buildPresets": [
     {
-      "name": "win_debug",
-      "configurePreset": "win_debug"
+      "name": "default",
+      "configurePreset": "default"
     },
     {
-      "name": "linux_debug",
-      "configurePreset": "linux_debug"
+      "name": "win_vs2022_debug",
+      "configurePreset": "win_vs2022_debug"
     },
     {
-      "name": "linux_release",
-      "configurePreset": "linux_release"
+      "name": "win_vs2022_release",
+      "configurePreset": "win_vs2022_release"
+    },
+    {
+      "name": "win_mingw_debug",
+      "configurePreset": "win_mingw_debug"
+    },
+    {
+      "name": "win_mingw_release",
+      "configurePreset": "win_mingw_release"
+    },
+    {
+      "name": "win_ninja_debug",
+      "configurePreset": "win_ninja_debug"
+    },
+    {
+      "name": "win_ninja_release",
+      "configurePreset": "win_ninja_release"
+    },
+    {
+      "name": "linux_make_debug",
+      "configurePreset": "linux_make_debug"
+    },
+    {
+      "name": "linux_make_release",
+      "configurePreset": "linux_make_release"
+    },
+    {
+      "name": "linux_ninja_debug",
+      "configurePreset": "linux_ninja_debug"
+    },
+    {
+      "name": "linux_ninja_release",
+      "configurePreset": "linux_ninja_release"
+    },
+    {
+      "name": "win_msbuild_debug",
+      "configurePreset": "win_msbuild_debug"
+    },
+    {
+      "name": "win_msbuild_release",
+      "configurePreset": "win_msbuild_release"
+    },
+    {
+      "name": "win_nmake_debug",
+      "configurePreset": "win_nmake_debug"
+    },
+    {
+      "name": "win_nmake_release",
+      "configurePreset": "win_nmake_release"
+    },
+    {
+      "name": "mac_xcode_debug",
+      "configurePreset": "mac_xcode_debug"
+    },
+    {
+      "name": "mac_xcode_release",
+      "configurePreset": "mac_xcode_release"
     }
   ]
 }

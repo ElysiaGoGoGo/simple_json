@@ -63,7 +63,19 @@
         "regex": "cpp",
         "ranges": "cpp",
         "span": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "chrono": "cpp",
+        "format": "cpp",
+        "charconv": "cpp",
+        "strstream": "cpp",
+        "csignal": "cpp",
+        "cstring": "cpp",
+        "forward_list": "cpp",
+        "list": "cpp",
+        "unordered_set": "cpp",
+        "cinttypes": "cpp",
+        "valarray": "cpp",
+        "text_encoding": "cpp"
     },
     "C_Cpp.errorSquiggles": "enabled"
 }

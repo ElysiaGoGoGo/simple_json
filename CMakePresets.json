@@ -34,6 +34,29 @@
       }
     },
     {
+      "name": "msbuild",
+      "generator": "Visual Studio 17 2022",
+      "toolset": "host=x64",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_GENERATOR_TOOLSET": "v143"
+      }
+    },
+    {
+      "name": "nmake",
+      "generator": "NMake Makefiles",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+      }
+    },
+    {
+      "name": "xcode",
+      "generator": "Xcode",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+      }
+    },
+    {
       "name": "vcpkg",
       "cacheVariables": {
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
@@ -49,12 +72,30 @@
       }
     },
     {
+      "name": "debug-msvc",
+      "binaryDir": "${sourceDir}/build/debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_FLAGS": "/Od /Zi",
+        "CMAKE_CXX_FLAGS": "/Od /Zi /W4"
+      }
+    },
+    {
       "name": "release",
       "binaryDir": "${sourceDir}/build/release",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_C_FLAGS": "-O3",
         "CMAKE_CXX_FLAGS": "-O3 -Wall"
+      }
+    },
+    {
+      "name": "release-msvc",
+      "binaryDir": "${sourceDir}/build/release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_FLAGS": "/O2",
+        "CMAKE_CXX_FLAGS": "/O2 /W4"
       }
     }
   ]

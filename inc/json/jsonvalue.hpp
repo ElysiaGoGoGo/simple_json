@@ -132,6 +132,8 @@ struct JsonValue : variant<string, bool, Accurate_Float, int, JsonArray, JsonObj
         return "boolean";
         case Type::Float:
         return "float";
+        case Type::Integer:
+        return "integer";
         case Type::Array:
         return "array";
         case Type::Object:

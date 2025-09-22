@@ -81,9 +81,106 @@ void JsonObjectBuilder::JsonObjectBuilder::build_from(const JsonStringView json_
 
 void JsonObjectBuilder::add(JsonObject& obj, const JsonStringView json_str)
 {
-    //TODO
+#ifdef DEBUG
+    std::cout << "building with cache:\n"
+              << string(build_cache.json_obj_str.begin(), build_cache.json_obj_str.end()) << std::endl;
+#endif
+    JsonObjectBuilder builder;
+    builder.build_cache.json_obj_str = json_str;
+    const auto &str = builder.build_cache.json_obj_str; // for laziness
 
+    auto iter = str.begin();
+    enum class IterStatus
+    {
+        EXPECT_LEFT_BRACE,
+        EXPECT_KEY,
+        EXPECT_COLON,
+        EXPECT_VALUE,
+        EXPECT_COMMA_OR_RIGHT_BRACE,
+        READY_TO_EXIT
+    };
+    IterStatus status = IterStatus::EXPECT_LEFT_BRACE;
+    string key_cache;
+    if(*iter =='{'&&*(iter+1)=='}')
+    {
+        return ;//empty object
+    }
+    auto end=str.end();
+    while (true)
+    {
+        if (iter >= end)
+        {
+            if (iter == end && status == IterStatus::READY_TO_EXIT)
+            {
+                break;
+            }
+            throw LineError("Unexpected end of obj str", iter); // throw "str ends not because of status: EXPECT_RIGHT_BRACE";
+        }
+        switch (status)
+        {
+        case IterStatus::EXPECT_LEFT_BRACE:
+
+        {
+           builder. build_cache.expect_char(iter, '{');
+
+            status = IterStatus::EXPECT_KEY;
+        }
+        break;
+        case IterStatus::EXPECT_KEY:
+        {
+            key_cache = std::move(builder.build_cache.get_key(iter));
+            status = IterStatus::EXPECT_COLON;
+            break;
+        }
+        case IterStatus::EXPECT_COLON:
+        {
+            builder.build_cache.expect_char(iter, ':');
+
+            status = IterStatus::EXPECT_VALUE;
+
+            break;
+        }
+        case IterStatus::EXPECT_VALUE:
+        {
+            obj.operator[](key_cache) = std::move(builder.build_cache.parse_value(iter));
+#ifdef DEBUG
+            auto index = iter - build_cache.json_obj_str.begin();
+
+            std::cout << "parsed value at index " << index << std::endl;
+#endif
+            status = IterStatus::EXPECT_COMMA_OR_RIGHT_BRACE;
+            break;
+        }
+        case IterStatus::EXPECT_COMMA_OR_RIGHT_BRACE:
+        {
+            if(auto c=*iter;c==',')
+            {
+                status=IterStatus::EXPECT_KEY;
+            }
+            else if(c=='}')
+            {
+                status=IterStatus::READY_TO_EXIT;
+            }
+            else
+            {
+                throw LineError("Expecting ',' or '}'", iter);
+            }
+            ++iter;
+            break;
+        }
+        case IterStatus::READY_TO_EXIT:
+        {
+            goto OUT_OF_LOOP;
+        }
+        }
+    }
+
+OUT_OF_LOOP:
+#if CXX_STANDARD <= 23
+    ;
+#endif
 }
+
 
 
 

@@ -84,7 +84,7 @@ class FileGuard
  * @brief 行错误类，提供详细的错误信息和上下文
  * Line error class providing detailed error information and context
  */
-class LineError: std::runtime_error
+class LineError: public std::runtime_error
 {
     JsonStringViewIterator iter;
     string msg;
