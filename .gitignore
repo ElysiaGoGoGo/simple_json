@@ -3,3 +3,4 @@ build
 cmake-build-debug
 build.log
 error.log
+.vscode
