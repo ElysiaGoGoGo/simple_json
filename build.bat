@@ -1,0 +1,12 @@
+cmake --preset=win_vs2022_debug
+cmake --build --preset=win_vs2022_debug
+cmake --preset=win_vs2022_release
+cmake --build --preset=win_vs2022_release
+cmake --preset=win_mingw_debug
+cmake --build --preset=win_mingw_debug
+cmake --preset=win_mingw_release
+cmake --build --preset=win_mingw_release
+cmake --preset=win_ninja_debug
+cmake --build --preset=win_ninja_debug
+cmake --preset=win_ninja_release
+cmake --build --preset=win_ninja_release
